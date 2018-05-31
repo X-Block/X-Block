@@ -1,2 +1,2 @@
 # X-Block
-X-Block aims at best Block for Everyone!
+X-Block aims at best blockchain for everyone!
