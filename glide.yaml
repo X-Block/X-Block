@@ -1,0 +1,20 @@
+package: .
+ignore:
+- golang.org/x/sys/unix
+import:
+- package: github.com/itchyny/base58-go
+- package: github.com/howeyc/gopass
+- package: golang.org/x/text
+  repo: https://github.com/golang/text.git
+- package: golang.org/x/crypto
+  repo: https://github.com/golang/crypto.git
+  subpackages:
+  - ripemd160
+- package: golang.org/x/sys
+  repo: https://github.com/golang/sys.git
+  subpackages:
+  - unix
+- package: golang.org/x/net
+  repo: https://github.com/golang/net.git
+  subpackages:
+  - context
