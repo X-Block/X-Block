@@ -22,7 +22,7 @@ Restful Api List
 | get_blk_hgt_by_txhash | GET /api/v1/block/height/txhash/:hash |
 | get_gasprice | GET /api/v1/gasprice|
 | get_allowance | GET /api/v1/allowance/:asset/:from/:to |
-| get_unclaimong | GET /api/v1/unclaimxcg/:addr |
+| get_unclaimxcg | GET /api/v1/unclaimxcg/:addr |
 | post_raw_tx | post /api/v1/transaction?preExec=0 |
 
 
