@@ -29,5 +29,10 @@ func (i *Integer) GetBigInteger() *big.Int {
 }
 
 
-
+func (i *Integer) GetBoolean() bool {
+	if i.value.Cmp(big.NewInt(0)) == 0 {
+		return false
+	}
+	return true
+}
 }
