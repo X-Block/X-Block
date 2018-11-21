@@ -150,3 +150,14 @@ func BigIntOp(bi *big.Int, op OpCode) *big.Int {
 	return nb
 }
 
+func AsBool(e interface{}) bool {
+	if v, ok := e.([]byte); ok {
+		for _, b := range v {
+			if b != 0 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
