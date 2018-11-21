@@ -29,4 +29,9 @@ func (ii *InteropInterface) GetBoolean() bool {
 	}
 	return true
 }
+
+func (ii *InteropInterface) GetByteArray() []byte {
+	return ii._object.ToArray()
+}
+
 }
