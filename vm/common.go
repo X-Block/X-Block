@@ -103,3 +103,20 @@ func MinInt64(datas []int64) int64 {
 	return minimum
 }
 
+func MaxInt64(datas []int64) int64 {
+
+	var maximum int64
+	
+	for i, d := range datas { 
+		if i == 0 {
+			maximum = d
+			
+		}
+		if d > maximum {
+			maximum = d
+		}
+	}
+
+	return maximum
+}
+
