@@ -36,4 +36,7 @@ func (ii *InteropInterface) GetByteArray() []byte {
 
 func (ii *InteropInterface) GetInterface() {
 }
+
+func (ii *InteropInterface) GetArray() []StackItem {
+	return []StackItem{}
 }
