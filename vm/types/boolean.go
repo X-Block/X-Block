@@ -42,5 +42,10 @@ func (b *Boolean) GetByteArray() []byte{
 	return []byte{0}
 }
 
+func (b *Boolean) GetInterface(){
 
+}
+
+func (b *Boolean) GetArray() []StackItem {
+	return []StackItem{b}
 }
