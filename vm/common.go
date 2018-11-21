@@ -227,3 +227,12 @@ func BigIntZip(ints1 *big.Int, ints2 *big.Int, op OpCode) *big.Int {
 	return nb
 }
 
+func BigIntComp(bigint *big.Int, op OpCode) bool {
+	var nb bool
+	switch op {
+	case NZ:
+		nb = bigint.Cmp(big.NewInt(int64(0))) != 0
+	}
+	return nb
+}
+
