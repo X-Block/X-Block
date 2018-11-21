@@ -1,6 +1,6 @@
 package events
 
-type  EventType int16
+Type  EventType int16
 
 const (
 
