@@ -55,3 +55,12 @@ func ToBigInt(data interface{}) *big.Int {
 	return &bi
 }
 
+//common func
+func SumBigInt(ints []big.Int) big.Int {
+	sum := big.NewInt(0)
+	for _, v := range ints {
+		sum = sum.Add(sum, &v)
+	}
+	return *sum
+}
+
