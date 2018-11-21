@@ -328,3 +328,7 @@ func WithInOp(int1 *big.Int, int2 *big.Int, int3 *big.Int) bool {
 	return BoolZip(b1, b2, BOOLAND)
 }
 
+func NewStackItems() []types.StackItem {
+	return make([]types.StackItem, 0)
+}
+
