@@ -129,3 +129,24 @@ func Concat(array1 []byte, array2 []byte) []byte {
 	return array1
 }
 
+func BigIntOp(bi *big.Int, op OpCode) *big.Int {
+	var nb *big.Int
+	switch op {
+	case INC:
+		nb = bi.Add(bi, big.NewInt(int64(1)))
+	case DEC:
+		nb = bi.Sub(bi, big.NewInt(int64(1)))
+	case SAL:
+		nb = bi.Lsh(bi, 1)
+	case SAR:
+		nb = bi.Rsh(bi, 1)
+	case NEGATE:
+		nb = bi.Neg(bi)
+	case ABS:
+		nb = bi.Abs(bi)
+	default:
+		nb = bi
+	}
+	return nb
+}
+
