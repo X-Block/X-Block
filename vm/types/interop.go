@@ -22,4 +22,11 @@ func (ii *InteropInterface) Equals() bool {
 func (ii *InteropInterface) GetBigInteger() big.Int {
 	return big.Int{}
 }
+
+func (ii *InteropInterface) GetBoolean() bool {
+	if ii._object == nil {
+		return false
+	}
+	return true
+}
 }
