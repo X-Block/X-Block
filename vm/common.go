@@ -266,3 +266,20 @@ func BoolZip(bi1 bool, bi2 bool, op OpCode) bool {
 	return nb
 }
 
+func BoolArrayOp(bools []bool, op OpCode) []bool {
+	bls := []bool{}
+	for _, b := range bools {
+		var nb bool
+
+		switch op {
+		case NOT:
+			nb = !b
+		default:
+			nb = b
+		}
+		bls = append(bls, nb)
+	}
+
+	return bls
+}
+
