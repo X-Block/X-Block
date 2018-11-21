@@ -64,3 +64,15 @@ func SumBigInt(ints []big.Int) big.Int {
 	return *sum
 }
 
+func MinBigInt(ints []big.Int) big.Int{
+	minimum := ints[0]
+
+	for _, d := range ints {
+		if d.Cmp(&minimum) < 0 {
+			minimum = d
+		}
+	}
+
+	return minimum
+}
+
