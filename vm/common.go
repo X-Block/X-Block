@@ -299,3 +299,26 @@ func IsEqualBytes(b1 []byte, b2 []byte) bool {
 	return true
 }
 
+func IsEqual(v1 interface{}, v2 interface{}) bool {
+
+	if reflect.TypeOf(v1) != reflect.TypeOf(v2) {
+		return false
+	}
+	switch t1 := v1.(type) {
+	case []byte:
+		switch t2 := v2.(type) {
+		case []byte:
+			return IsEqualBytes(t1, t2)
+		}
+	case int8, int16, int32, int64:
+		if v1 == v2 {
+			return true
+		}
+		return false
+	default:
+		return false
+	}
+
+	return false
+}
+
