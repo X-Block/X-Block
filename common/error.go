@@ -1,6 +1,3 @@
-package common
-
-// Define common error process and const
-const (
+package common(
 	HANDSHARKFAIL = -1
 )
