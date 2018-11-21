@@ -14,4 +14,5 @@ func TestTypes(t *testing.T) {
 	t.Log(ba.GetBoolean())
 	t.Log(b.Equals(NewBoolean(false)))
 	t.Log(a1.Equals(NewArray([]StackItem{NewInteger(big.NewInt(1))})))
+
 }
