@@ -34,4 +34,6 @@ func (ii *InteropInterface) GetByteArray() []byte {
 	return ii._object.ToArray()
 }
 
+func (ii *InteropInterface) GetInterface() {
+}
 }
