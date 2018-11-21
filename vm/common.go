@@ -332,3 +332,21 @@ func NewStackItems() []types.StackItem {
 	return make([]types.StackItem, 0)
 }
 
+func NewStackItem(data interface{}) (types.StackItem, error) {
+	var stackItem types.StackItem
+	var err error
+	switch data.(type) {
+	case int8, int16, int32, int64, int, uint8, uint16, uint32, uint64, *big.Int, big.Int:
+		stackItem = types.NewInteger(ToBigInt(data))
+	case bool:
+		stackItem = types.NewBoolean(data.(bool))
+	case []byte:
+		stackItem = types.NewByteArray(data.([]byte))
+	case []types.StackItem:
+		stackItem = types.NewArray(data.([]types.StackItem))
+	default:
+		err = errors.ErrBadType
+	}
+	return stackItem, err
+}
+
