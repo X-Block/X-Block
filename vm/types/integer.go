@@ -35,4 +35,15 @@ func (i *Integer) GetBoolean() bool {
 	}
 	return true
 }
+
+func (i *Integer) GetByteArray() []byte{
+	return i.value.Bytes()
+}
+
+func (i *Integer) GetInterface() {
+
+}
+
+func (i *Integer) GetArray() []StackItem {
+	return []StackItem{i}
 }
