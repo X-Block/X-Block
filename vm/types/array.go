@@ -50,5 +50,6 @@ func (a *Array) GetInterface(){
 
 }
 
-
+func (a *Array) GetArray() []StackItem{
+	return a._array
 }
