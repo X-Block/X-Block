@@ -10,3 +10,6 @@ import (
 
 type BigIntSorter []big.Int
 
+func (c BigIntSorter) Len() int {
+	return len(c)
+}
