@@ -161,3 +161,19 @@ func AsBool(e interface{}) bool {
 	return false
 }
 
+func AsInt64(b []byte) (int64, error) {
+	if len(b) == 0 {
+		return 0, nil
+	}
+	if len(b) > 8 {
+		return 0, errors.ErrBadValue
+	}
+
+	var bs [8]byte
+	copy(bs[:], b)
+
+	res := binary.LittleEndian.Uint64(bs[:])
+
+	return int64(res), nil
+}
+
