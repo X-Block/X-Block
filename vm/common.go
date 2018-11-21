@@ -120,3 +120,12 @@ func MaxInt64(datas []int64) int64 {
 	return maximum
 }
 
+func Concat(array1 []byte, array2 []byte) []byte {
+	len := len(array2)
+	for i := 0; i < len; i++ {
+		array1 = append(array1, array2[i]) 
+	}
+
+	return array1
+}
+
