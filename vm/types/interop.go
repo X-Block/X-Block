@@ -18,4 +18,8 @@ func NewInteropInterface(value interfaces.IInteropInterface) *InteropInterface {
 func (ii *InteropInterface) Equals() bool {
 	return false
 }
+
+func (ii *InteropInterface) GetBigInteger() big.Int {
+	return big.Int{}
+}
 }
