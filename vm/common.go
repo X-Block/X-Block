@@ -283,3 +283,19 @@ func BoolArrayOp(bools []bool, op OpCode) []bool {
 	return bls
 }
 
+func IsEqualBytes(b1 []byte, b2 []byte) bool {
+	len1 := len(b1)
+	len2 := len(b2)
+	if len1 != len2 {
+		return false
+	}
+
+	for i := 0; i < len1; i++ {
+		if b1[i] != b2[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
