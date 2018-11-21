@@ -177,3 +177,12 @@ func AsInt64(b []byte) (int64, error) {
 	return int64(res), nil
 }
 
+func ByteArrZip(s1 []byte, s2 []byte, op OpCode) []byte{
+	var ns []byte
+	switch op {
+	case CAT:
+		ns = append(s1, s2...)
+	}
+	return ns
+}
+
