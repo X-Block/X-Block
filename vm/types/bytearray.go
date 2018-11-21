@@ -54,4 +54,7 @@ func (ba *ByteArray) GetByteArray() []byte {
 func (ba *ByteArray) GetInterface() {
 
 }
+
+func (ba *ByteArray) GetArray() []StackItem {
+	return []StackItem{ba}
 }
