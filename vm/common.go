@@ -24,3 +24,34 @@ func (c BigIntSorter) Less(i, j int) bool {
 	return false
 }
 
+func ToBigInt(data interface{}) *big.Int {
+	var bi big.Int
+	switch t := data.(type) {
+	case int64:
+		bi.SetInt64(int64(t))
+	case int32:
+		bi.SetInt64(int64(t))
+	case int16:
+		bi.SetInt64(int64(t))
+	case int8:
+		bi.SetInt64(int64(t))
+	case int:
+		bi.SetInt64(int64(t))
+	case uint64:
+		bi.SetUint64(uint64(t))
+	case uint32:
+		bi.SetUint64(uint64(t))
+	case uint16:
+		bi.SetUint64(uint64(t))
+	case uint8:
+		bi.SetUint64(uint64(t))
+	case uint:
+		bi.SetUint64(uint64(t))
+	case big.Int:
+		bi = t
+	case *big.Int:
+		bi = *t
+	}
+	return &bi
+}
+
