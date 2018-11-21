@@ -350,3 +350,10 @@ func NewStackItem(data interface{}) (types.StackItem, error) {
 	return stackItem, err
 }
 
+func AssertExecutionContext(context interface{}) *ExecutionContext {
+	if c, ok := context.(*ExecutionContext); ok {
+		return c
+	}
+	return nil
+}
+
