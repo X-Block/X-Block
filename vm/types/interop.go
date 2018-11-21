@@ -13,4 +13,9 @@ func NewInteropInterface(value interfaces.IInteropInterface) *InteropInterface {
 	var ii InteropInterface
 	ii._object = value
 	return &ii
-}}
+}
+
+func (ii *InteropInterface) Equals() bool {
+	return false
+}
+}
