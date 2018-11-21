@@ -255,3 +255,14 @@ func BigIntMultiComp(ints1 *big.Int, ints2 *big.Int, op OpCode) bool {
 	return nb
 }
 
+func BoolZip(bi1 bool, bi2 bool, op OpCode) bool {
+	var nb bool
+	switch op {
+	case BOOLAND:
+		nb = bi1 && bi2
+	case BOOLOR:
+		nb = bi1 || bi2
+	}
+	return nb
+}
+
