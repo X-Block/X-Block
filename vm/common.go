@@ -322,3 +322,9 @@ func IsEqual(v1 interface{}, v2 interface{}) bool {
 	return false
 }
 
+func WithInOp(int1 *big.Int, int2 *big.Int, int3 *big.Int) bool {
+	b1 := BigIntMultiComp(int1, int2, GTE)
+	b2 := BigIntMultiComp(int1, int3, LT)
+	return BoolZip(b1, b2, BOOLAND)
+}
+
