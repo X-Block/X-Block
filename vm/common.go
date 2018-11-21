@@ -357,3 +357,9 @@ func AssertExecutionContext(context interface{}) *ExecutionContext {
 	return nil
 }
 
+func AssertStackItem(stackItem interface{}) types.StackItem {
+	if s, ok := stackItem.(types.StackItem); ok {
+		return s
+	}
+	return nil
+}
