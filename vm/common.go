@@ -88,3 +88,18 @@ func MaxBigInt(ints []big.Int) big.Int{
 	return max
 }
 
+func MinInt64(datas []int64) int64 {
+
+	var minimum int64
+	for i, d := range datas { 
+		if i == 0 {
+			minimum = d
+		}
+		if d < minimum {
+			minimum = d
+		}
+	}
+
+	return minimum
+}
+
