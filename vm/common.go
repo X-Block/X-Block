@@ -76,3 +76,15 @@ func MinBigInt(ints []big.Int) big.Int{
 	return minimum
 }
 
+func MaxBigInt(ints []big.Int) big.Int{
+	max := ints[0]
+
+	for _, d := range ints {
+		if d.Cmp(&max) > 0 {
+			max = d
+		}
+	}
+
+	return max
+}
+
