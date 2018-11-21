@@ -236,3 +236,22 @@ func BigIntComp(bigint *big.Int, op OpCode) bool {
 	return nb
 }
 
+func BigIntMultiComp(ints1 *big.Int, ints2 *big.Int, op OpCode) bool {
+	var nb bool
+	switch op {
+	case NUMEQUAL:
+		nb = ints1.Cmp(ints2) == 0
+	case NUMNOTEQUAL:
+		nb = ints1.Cmp(ints2) != 0
+	case LT:
+		nb = ints1.Cmp(ints2) < 0
+	case GT:
+		nb = ints1.Cmp(ints2) > 0
+	case LTE:
+		nb = ints1.Cmp(ints2) <= 0
+	case GTE:
+		nb = ints1.Cmp(ints2) >= 0
+	}
+	return nb
+}
+
