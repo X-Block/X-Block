@@ -186,3 +186,44 @@ func ByteArrZip(s1 []byte, s2 []byte, op OpCode) []byte{
 	return ns
 }
 
+func BigIntZip(ints1 *big.Int, ints2 *big.Int, op OpCode) *big.Int {
+	var nb *big.Int
+	switch op {
+	case AND:
+		nb = ints1.And(ints1, ints2)
+	case OR:
+		nb = ints1.Or(ints1, ints2)
+	case XOR:
+		nb = ints1.Xor(ints1, ints2)
+	case ADD:
+		nb = ints1.Add(ints1, ints2)
+	case SUB:
+		nb = ints1.Sub(ints1, ints2)
+	case MUL:
+		nb = ints1.Mul(ints1, ints2)
+	case DIV:
+		nb = ints1.Div(ints1, ints2)
+	case MOD:
+		nb = ints1.Mod(ints1, ints2)
+	case SHL:
+		nb = ints1.Lsh(ints1, uint(ints2.Int64()))
+	case SHR:
+		nb = ints1.Rsh(ints1, uint(ints2.Int64()))
+	case MIN:
+		c := ints1.Cmp(ints2)
+		if c <= 0 {
+			nb = ints1
+		} else {
+			nb = ints2
+		}
+	case MAX:
+		c := ints1.Cmp(ints2)
+		if c <= 0 {
+			nb = ints2
+		} else {
+			nb = ints1
+		}
+	}
+	return nb
+}
+
