@@ -21,3 +21,9 @@ type Neter interface {
 	Tx(buf []byte)
 }
 
+func StartProtocol(pubKey *crypto.PubKey) protocol.Noder {
+	net := node.InitNode(pubKey)
+	net.ConnectSeeds()
+
+	return net
+}
