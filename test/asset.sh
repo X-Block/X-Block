@@ -39,3 +39,14 @@ echo "Asset ID: $assetid"
 sleep 6
 
 
+output=$($CMD asset --issue --asset $assetid --to $programhash --value 9999 --wallet $WALLET --password $PASSWD)
+if (( $? != 0 )); then
+	echo "asset issuance failed"
+	exit 1
+fi
+issue=$(getHashFromOutput "$output")
+echo "Issue: $issue"
+
+sleep 6
+
+
