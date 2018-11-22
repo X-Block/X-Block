@@ -286,3 +286,9 @@ func NewInv(inv *InvPayload) ([]byte, error) {
 	return m, nil
 }
 
+func (msg *InvPayload) Serialization(w io.Writer) {
+	serialization.WriteUint8(w, uint8(msg.InvType))
+	serialization.WriteUint32(w, msg.Cnt)
+
+	binary.Write(w, binary.LittleEndian, msg.Blk)
+}
