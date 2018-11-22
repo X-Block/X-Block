@@ -43,3 +43,13 @@ func NewPongMsg() ([]byte, error) {
 	return m, nil
 }
 
+func (msg pong) Verify(buf []byte) error {
+	err := msg.msgHdr.Verify(buf)
+	return err
+}
+
+func (msg pong) Handle(node Noder) error {
+	node.SetHeight(msg.height)
+	return nil
+}
+
