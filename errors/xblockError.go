@@ -7,3 +7,7 @@ type xblockError struct {
 	code ErrCode
 }
 
+func (e xblockError) Error() string {
+	return e.errmsg
+}
+
