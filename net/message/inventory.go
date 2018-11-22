@@ -83,3 +83,14 @@ func (msg blocksReq) Handle(node Noder) error {
 	return nil
 }
 
+func (msg blocksReq) Serialization() ([]byte, error) {
+	var buf bytes.Buffer
+
+	err := binary.Write(&buf, binary.LittleEndian, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), err
+}
+
