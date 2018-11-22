@@ -34,3 +34,26 @@ type Inv struct {
 	P   InvPayload
 }
 
+func NewBlocksReq(n Noder) ([]byte, error) {
+	var h blocksReq
+	log.Debug("request block hash")
+	h.p.HeaderHashCount = 1
+	buf := ledger.DefaultLedger.Blockchain.CurrentBlockHash()
+
+	copy(h.p.hashStart[:], reverse(buf[:]))
+
+	p := new(bytes.Buffer)
+	err := binary.Write(p, binary.LittleEndian, &(h.p))
+	if err != nil {
+		log.Error("Binary Write failed at new blocksReq")
+		return nil, err
+	}
+
+	s := checkSum(p.Bytes())
+	h.msgHdr.init("getblocks", s, uint32(len(p.Bytes())))
+
+	m, err := h.Serialization()
+
+	return m, err
+}
+
