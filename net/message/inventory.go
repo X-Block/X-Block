@@ -64,3 +64,22 @@ func (msg blocksReq) Verify(buf []byte) error {
 	return err
 }
 
+func (msg blocksReq) Handle(node Noder) error {
+	log.Debug()
+	log.Debug("handle blocks request")
+	var starthash Uint256
+	var stophash Uint256
+	starthash = msg.p.hashStart
+	stophash = msg.p.hashStop
+	inv, err := GetInvFromBlockHash(starthash, stophash)
+	if err != nil {
+		return err
+	}
+	buf, err := NewInv(inv)
+	if err != nil {
+		return err
+	}
+	go node.Tx(buf)
+	return nil
+}
+
