@@ -13,3 +13,10 @@ if [[ ! -f $CONFIG ]]; then
 fi
 
 
+$CMD wallet -c --name $WALLET --password $PASSWD
+if (( $? != 0 )); then
+	echo "wallet creation failed"
+	exit 1
+fi
+
+
