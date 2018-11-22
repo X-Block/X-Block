@@ -17,3 +17,13 @@ type addrReq struct {
 	
 }
 
+type addr struct {
+	hdr       msgHdr
+	nodeCnt   uint64
+	nodeAddrs []NodeAddr
+}
+
+const (
+	NODEADDRSIZE = 30
+)
+
