@@ -256,3 +256,10 @@ func (hdr msgHdr) Verify(buf []byte) error {
 	return nil
 }
 
+func (msg *msgHdr) Deserialization(p []byte) error {
+
+	buf := bytes.NewBuffer(p[0:MSGHDRLEN])
+	err := binary.Read(buf, binary.LittleEndian, msg)
+	return err
+}
+
