@@ -73,3 +73,13 @@ func (msg ping) Serialization() ([]byte, error) {
 
 }
 
+func (msg *ping) Deserialization(p []byte) error {
+	buf := bytes.NewBuffer(p)
+	err := binary.Read(buf, binary.LittleEndian, &(msg.msgHdr))
+	if err != nil {
+		return err
+	}
+
+	msg.height, err = serialization.ReadUint64(buf)
+	return err
+}
