@@ -133,3 +133,37 @@ func NewTxn(txn *transaction.Transaction) ([]byte, error) {
 	return m, nil
 }
 
+func (msg trn) Serialization() ([]byte, error) {
+	hdrBuf, err := msg.msgHdr.Serialization()
+	if err != nil {
+		return nil, err
+	}
+	buf := bytes.NewBuffer(hdrBuf)
+	msg.txn.Serialize(buf)
+
+	return buf.Bytes(), err
+}
+
+func (msg *trn) Deserialization(p []byte) error {
+	buf := bytes.NewBuffer(p)
+	err := binary.Read(buf, binary.LittleEndian, &(msg.msgHdr))
+	err = msg.txn.Deserialize(buf)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type txnPool struct {
+	msgHdr
+
+}
+
+func ReqTxnPool(node Noder) error {
+	msg := AllocMsg("txnpool", 0)
+	buf, _ := msg.Serialization()
+	go node.Tx(buf)
+
+	return nil
+}
