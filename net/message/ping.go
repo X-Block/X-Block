@@ -59,3 +59,17 @@ func (msg ping) Handle(node Noder) error {
 	return err
 }
 
+func (msg ping) Serialization() ([]byte, error) {
+	hdrBuf, err := msg.msgHdr.Serialization()
+	if err != nil {
+		return nil, err
+	}
+	buf := bytes.NewBuffer(hdrBuf)
+	err = serialization.WriteUint64(buf, msg.height)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), err
+
+}
+
