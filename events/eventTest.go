@@ -23,6 +23,9 @@ func TestNewEvent(t *testing.T) {
 	fmt.Println("Notify...")
 	event.Notify(EventReplyTx,nil)
 
+	fmt.Println("Notify All...")
+	event.NotifyAll()
+
 	
 
 }
