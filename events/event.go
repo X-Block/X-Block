@@ -76,3 +76,15 @@ func (e *Event) NotifySubscriber(eventfunc EventFunc, value interface{}) {
 }
 
 
+func (e *Event) NotifyAll() (errs []error){
+	e.m.RLock()
+	defer e.m.RUnlock()
+
+	for eventtype, _ := range e.subscribers{
+		if err := e.Notify(eventtype,nil);err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return errs
+}
