@@ -52,3 +52,100 @@ type filterload struct {
 	
 }
 
+func AllocMsg(t string, length int) Messager {
+	switch t {
+	case "msgheader":
+		var msg msgHdr
+		return &msg
+	case "version":
+		var msg version
+		copy(msg.Hdr.CMD[0:len(t)], t)
+		return &msg
+	case "verack":
+		var msg verACK
+		copy(msg.msgHdr.CMD[0:len(t)], t)
+		return &msg
+	case "getheaders":
+		var msg headersReq
+		copy(msg.hdr.CMD[0:len(t)], t)
+		return &msg
+	case "headers":
+		var msg blkHeader
+		copy(msg.hdr.CMD[0:len(t)], t)
+		return &msg
+	case "getaddr":
+		var msg addrReq
+		copy(msg.Hdr.CMD[0:len(t)], t)
+		return &msg
+	case "addr":
+		var msg addr
+		copy(msg.hdr.CMD[0:len(t)], t)
+		return &msg
+	case "inv":
+		var msg Inv
+		copy(msg.Hdr.CMD[0:len(t)], t)
+		msg.P.Blk = make([]byte, length-MSGHDRLEN-1)
+		return &msg
+	case "getdata":
+		var msg dataReq
+		copy(msg.msgHdr.CMD[0:len(t)], t)
+		return &msg
+	case "block":
+		var msg block
+		copy(msg.msgHdr.CMD[0:len(t)], t)
+		return &msg
+	case "tx":
+		var msg trn
+		copy(msg.msgHdr.CMD[0:len(t)], t)
+	
+		return &msg
+	case "consensus":
+		var msg consensus
+		copy(msg.msgHdr.CMD[0:len(t)], t)
+		return &msg
+	case "filteradd":
+		var msg filteradd
+		copy(msg.msgHdr.CMD[0:len(t)], t)
+		return &msg
+	case "filterclear":
+		var msg filterclear
+		copy(msg.msgHdr.CMD[0:len(t)], t)
+		return &msg
+	case "filterload":
+		var msg filterload
+		copy(msg.msgHdr.CMD[0:len(t)], t)
+		return &msg
+	case "getblocks":
+		var msg blocksReq
+		copy(msg.msgHdr.CMD[0:len(t)], t)
+		return &msg
+	case "txnpool":
+		var msg txnPool
+		copy(msg.msgHdr.CMD[0:len(t)], t)
+		return &msg
+	case "alert":
+		log.Warn("Not supported message type - alert")
+		return nil
+	case "merkleblock":
+		log.Warn("Not supported message type - merkleblock")
+		return nil
+	case "notfound":
+		log.Warn("Not supported message type - notfound")
+		return nil
+	case "ping":
+		var msg ping
+		copy(msg.msgHdr.CMD[0:len(t)], t)
+		return &msg
+	case "pong":
+		var msg pong
+		copy(msg.msgHdr.CMD[0:len(t)], t)
+		return &msg
+	case "reject":
+		log.Warn("Not supported message type - reject")
+		return nil
+	default:
+		log.Warn("Unknown message type")
+		return nil
+	}
+}
+
