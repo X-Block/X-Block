@@ -23,3 +23,14 @@ type blocksReq struct {
 	}
 }
 
+type InvPayload struct {
+	InvType InventoryType
+	Cnt     uint32
+	Blk     []byte
+}
+
+type Inv struct {
+	Hdr msgHdr
+	P   InvPayload
+}
+
