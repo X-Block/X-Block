@@ -131,3 +131,12 @@ func (msg *NodeAddr) Deserialization(p []byte) error {
 	return err
 }
 
+func (msg NodeAddr) Serialization() ([]byte, error) {
+	var buf bytes.Buffer
+	err := binary.Write(&buf, binary.LittleEndian, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), err
+}
