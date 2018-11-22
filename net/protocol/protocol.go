@@ -20,3 +20,8 @@ type NodeAddr struct {
 }
 
 
+const (
+	VERIFYNODE  = 1
+	SERVICENODE = 2
+)
+
