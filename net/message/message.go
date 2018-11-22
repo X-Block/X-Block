@@ -239,3 +239,20 @@ func (hdr *msgHdr) init(cmd string, checksum []byte, length uint32) {
 
 }
 
+func (hdr msgHdr) Verify(buf []byte) error {
+	if magicVerify(hdr.Magic) == false {
+		log.Warn(fmt.Sprintf("Unmatched magic number 0x%0x", hdr.Magic))
+		return errors.New("Unmatched magic number")
+	}
+	checkSum := checkSum(buf)
+	if bytes.Equal(hdr.Checksum[:], checkSum[:]) == false {
+		str1 := hex.EncodeToString(hdr.Checksum[:])
+		str2 := hex.EncodeToString(checkSum[:])
+		log.Warn(fmt.Sprintf("Message Checksum error, Received checksum %s Wanted checksum: %s",
+			str1, str2))
+		return errors.New("Message Checksum error")
+	}
+
+	return nil
+}
+
