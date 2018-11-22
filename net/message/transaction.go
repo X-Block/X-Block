@@ -69,3 +69,25 @@ func (msg dataReq) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func (msg *dataReq) Deserialization(p []byte) error {
+	buf := bytes.NewBuffer(p)
+	err := binary.Read(buf, binary.LittleEndian, &(msg.msgHdr))
+	if err != nil {
+		log.Warn("Parse datareq message hdr error")
+		return errors.New("Parse datareq message hdr error")
+	}
+
+	err = binary.Read(buf, binary.LittleEndian, &(msg.dataType))
+	if err != nil {
+		log.Warn("Parse datareq message dataType error")
+		return errors.New("Parse datareq message dataType error")
+	}
+
+	err = msg.hash.Deserialize(buf)
+	if err != nil {
+		log.Warn("Parse datareq message hash error")
+		return errors.New("Parse datareq message hash error")
+	}
+	return nil
+}
+
