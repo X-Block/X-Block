@@ -145,3 +145,14 @@ func (msg Inv) Handle(node Noder) error {
 	return nil
 }
 
+func (msg Inv) Serialization() ([]byte, error) {
+	hdrBuf, err := msg.Hdr.Serialization()
+	if err != nil {
+		return nil, err
+	}
+	buf := bytes.NewBuffer(hdrBuf)
+	msg.P.Serialization(buf)
+
+	return buf.Bytes(), err
+}
+
