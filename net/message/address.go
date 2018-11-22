@@ -80,3 +80,8 @@ func NewAddrs(nodeaddrs []NodeAddr, count uint64) ([]byte, error) {
 	return m, nil
 }
 
+func (msg addrReq) Verify(buf []byte) error {
+	err := msg.Hdr.Verify(buf)
+	return err
+}
+
