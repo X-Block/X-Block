@@ -94,3 +94,15 @@ func (msg blocksReq) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func (msg *blocksReq) Deserialization(p []byte) error {
+	buf := bytes.NewBuffer(p)
+	err := binary.Read(buf, binary.LittleEndian, &msg)
+	return err
+}
+
+func (msg Inv) Verify(buf []byte) error {
+
+	err := msg.Hdr.Verify(buf)
+	return err
+}
+
