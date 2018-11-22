@@ -16,5 +16,9 @@ func TestNewEvent(t *testing.T) {
 		fmt.Println("subscriber2 event func.")
 	}
 
+	fmt.Println("Subscribe...")
+	sub1 := event.Subscribe(EventReplyTx,subscriber1)
+	event.Subscribe(EventSaveBlock,subscriber2)
+
 
 }
