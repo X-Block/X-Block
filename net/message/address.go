@@ -156,3 +156,26 @@ func (msg addr) Verify(buf []byte) error {
 	return err
 }
 
+func (msg addr) Handle(node Noder) error {
+	log.Debug()
+	for _, v := range msg.nodeAddrs {
+		var ip net.IP
+		ip = v.IpAddr[:]
+		address := ip.To16().String() + ":" + strconv.Itoa(int(v.Port))
+		log.Info(fmt.Sprintf("The ip address is %s id is 0x%x", address, v.ID))
+
+		if v.ID == node.LocalNode().GetID() {
+			continue
+		}
+		if node.LocalNode().NodeEstablished(v.ID) {
+			continue
+		}
+
+		if v.Port == 0 {
+			continue
+		}
+
+		go node.LocalNode().Connect(address)
+	}
+	return nil
+}
