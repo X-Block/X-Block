@@ -26,6 +26,8 @@ func TestNewEvent(t *testing.T) {
 	fmt.Println("Notify All...")
 	event.NotifyAll()
 
-	
+	event.UnSubscribe(EventReplyTx,sub1)
+	fmt.Println("Notify All after unsubscribe sub1...")
+	event.NotifyAll()
 
 }
