@@ -10,3 +10,8 @@ import (
 	"encoding/binary"
 )
 
+type pong struct {
+	msgHdr
+	height uint64
+}
+
