@@ -85,3 +85,16 @@ func (msg addrReq) Verify(buf []byte) error {
 	return err
 }
 
+func (msg addrReq) Handle(node Noder) error {
+	log.Debug()
+	var addrstr []NodeAddr
+	var count uint64
+	addrstr, count = node.LocalNode().GetNeighborAddrs()
+	buf, err := NewAddrs(addrstr, count)
+	if err != nil {
+		return err
+	}
+	go node.Tx(buf)
+	return nil
+}
+
