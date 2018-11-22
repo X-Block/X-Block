@@ -15,3 +15,31 @@ type ping struct {
 	height uint64
 }
 
+func NewPingMsg() ([]byte, error) {
+	var msg ping
+	msg.msgHdr.Magic = NETMAGIC
+	copy(msg.msgHdr.CMD[0:7], "ping")
+	msg.height = uint64(ledger.DefaultLedger.Store.GetHeaderHeight())
+	tmpBuffer := bytes.NewBuffer([]byte{})
+	serialization.WriteUint64(tmpBuffer, msg.height)
+	b := new(bytes.Buffer)
+	err := binary.Write(b, binary.LittleEndian, tmpBuffer.Bytes())
+	if err != nil {
+		log.Error("Binary Write failed at new Msg")
+		return nil, err
+	}
+	s := sha256.Sum256(b.Bytes())
+	s2 := s[:]
+	s = sha256.Sum256(s2)
+	buf := bytes.NewBuffer(s[:4])
+	binary.Read(buf, binary.LittleEndian, &(msg.msgHdr.Checksum))
+	msg.msgHdr.Length = uint32(len(b.Bytes()))
+
+	m, err := msg.Serialization()
+	if err != nil {
+		log.Error("Error Convert net message ", err.Error())
+		return nil, err
+	}
+	return m, nil
+}
+
