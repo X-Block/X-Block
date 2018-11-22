@@ -19,3 +19,6 @@ func (e xblockError) GetRoot()  error {
 	return e.root
 }
 
+func (e xblockError) GetCallStack()  *CallStack {
+	return e.callstack
+}
