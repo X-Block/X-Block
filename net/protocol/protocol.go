@@ -64,3 +64,64 @@ const (
 	INACTIVITY = 5
 )
 
+type Noder interface {
+	Version() uint32
+	GetID() uint64
+	Services() uint64
+	GetPort() uint16
+	GetState() uint32
+	GetRelay() bool
+	SetState(state uint32)
+	CompareAndSetState(old, new uint32) bool
+	UpdateRXTime(t time.Time)
+	LocalNode() Noder
+	DelNbrNode(id uint64) (Noder, bool)
+	AddNbrNode(Noder)
+	CloseConn()
+	GetHeight() uint64
+	GetConnectionCnt() uint
+	GetTxnPool(bool) map[common.Uint256]*transaction.Transaction
+	AppendTxnPool(*transaction.Transaction) bool
+	ExistedID(id common.Uint256) bool
+	ReqNeighborList()
+	DumpInfo()
+	UpdateInfo(t time.Time, version uint32, services uint64,
+		port uint16, nonce uint64, relay uint8, height uint64)
+	ConnectSeeds()
+	Connect(nodeAddr string) error
+	Tx(buf []byte)
+	GetTime() int64
+	NodeEstablished(uid uint64) bool
+	GetEvent(eventName string) *events.Event
+	GetNeighborAddrs() ([]NodeAddr, uint64)
+	GetTransaction(hash common.Uint256) *transaction.Transaction
+	IncRxTxnCnt()
+	GetTxnCnt() uint64
+	GetRxTxnCnt() uint64
+
+	Xmit(interface{}) error
+	SynchronizeTxnPool()
+	GetBookKeeperAddr() *crypto.PubKey
+	GetBookKeepersAddrs() ([]*crypto.PubKey, uint64)
+	SetBookKeeperAddr(pk *crypto.PubKey)
+	GetNeighborHeights() ([]uint64, uint64)
+	SyncNodeHeight()
+	CleanSubmittedTransactions(block *ledger.Block) error
+
+	IsSyncHeaders() bool
+	SetSyncHeaders(b bool)
+	IsSyncFailed() bool
+	SetSyncFailed()
+	StartRetryTimer()
+	StopRetryTimer()
+	GetNeighborNoder() []Noder
+	GetNbrNodeCnt() uint32
+	StoreFlightHeight(height uint32)
+	GetFlightHeightCnt() int
+	RemoveFlightHeightLessThan(height uint32)
+	RemoveFlightHeight(height uint32)
+	GetLastRXTime() time.Time
+	SetHeight(height uint64)
+	WaitForFourPeersStart()
+}
+
