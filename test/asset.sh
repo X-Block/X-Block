@@ -50,3 +50,14 @@ echo "Issue: $issue"
 sleep 6
 
 
+output=$(./nodectl asset --transfer --asset $assetid --to $programhash --value 1 --wallet $WALLET --password $PASSWD)
+if (( $? != 0 )); then
+	echo "asset transfer failed"
+	exit 1
+fi
+transfer=$(getHashFromOutput "$output")
+echo "Transfer: $transfer"
+
+echo PASS
+
+exit 0
