@@ -48,3 +48,14 @@ func (msg ping) Verify(buf []byte) error {
 	return err
 }
 
+func (msg ping) Handle(node Noder) error {
+	node.SetHeight(msg.height)
+	buf, err := NewPongMsg()
+	if err != nil {
+		log.Error("failed build a new ping message")
+	} else {
+		go node.Tx(buf)
+	}
+	return err
+}
+
