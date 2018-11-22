@@ -20,3 +20,11 @@ if (( $? != 0 )); then
 fi
 
 
+output=$($CMD wallet -l --name $WALLET --password $PASSWD)
+if (( $? != 0 )); then
+	echo "wallet listing failed"
+	exit 1
+fi
+programhash=$(echo "$output" | grep "program hash" | awk -F : '{print $2}')
+
+
