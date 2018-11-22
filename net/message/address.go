@@ -135,3 +135,19 @@ func (msg addr) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func (msg *addr) Deserialization(p []byte) error {
+	buf := bytes.NewBuffer(p)
+	err := binary.Read(buf, binary.LittleEndian, &(msg.hdr))
+	err = binary.Read(buf, binary.LittleEndian, &(msg.nodeCnt))
+	log.Debug("The address count is ", msg.nodeCnt)
+	msg.nodeAddrs = make([]NodeAddr, msg.nodeCnt)
+	for i := 0; i < int(msg.nodeCnt); i++ {
+		err := binary.Read(buf, binary.LittleEndian, &(msg.nodeAddrs[i]))
+		if err != nil {
+			goto err
+		}
+	}
+err:
+	return err
+}
+
