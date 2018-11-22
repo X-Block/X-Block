@@ -10,3 +10,8 @@ import (
 	"encoding/binary"
 )
 
+type ping struct {
+	msgHdr
+	height uint64
+}
+
