@@ -43,3 +43,8 @@ func NewPingMsg() ([]byte, error) {
 	return m, nil
 }
 
+func (msg ping) Verify(buf []byte) error {
+	err := msg.msgHdr.Verify(buf)
+	return err
+}
+
