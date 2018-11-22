@@ -252,3 +252,37 @@ func NewInvPayload(invType InventoryType, count uint32, msg []byte) *InvPayload 
 	}
 }
 
+func NewInv(inv *InvPayload) ([]byte, error) {
+	var msg Inv
+
+	msg.P.Blk = inv.Blk
+	msg.P.InvType = inv.InvType
+	msg.P.Cnt = inv.Cnt
+	msg.Hdr.Magic = NETMAGIC
+	cmd := "inv"
+	copy(msg.Hdr.CMD[0:len(cmd)], cmd)
+	tmpBuffer := bytes.NewBuffer([]byte{})
+	inv.Serialization(tmpBuffer)
+
+	b := new(bytes.Buffer)
+	err := binary.Write(b, binary.LittleEndian, tmpBuffer.Bytes())
+	if err != nil {
+		log.Error("Binary Write failed at new Msg", err.Error())
+		return nil, err
+	}
+	s := sha256.Sum256(b.Bytes())
+	s2 := s[:]
+	s = sha256.Sum256(s2)
+	buf := bytes.NewBuffer(s[:4])
+	binary.Read(buf, binary.LittleEndian, &(msg.Hdr.Checksum))
+	msg.Hdr.Length = uint32(len(b.Bytes()))
+
+	m, err := msg.Serialization()
+	if err != nil {
+		log.Error("Error Convert net message ", err.Error())
+		return nil, err
+	}
+
+	return m, nil
+}
+
