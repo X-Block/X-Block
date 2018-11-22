@@ -108,3 +108,9 @@ func (msg addrReq) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func (msg *addrReq) Deserialization(p []byte) error {
+	buf := bytes.NewBuffer(p)
+	err := binary.Read(buf, binary.LittleEndian, msg)
+	return err
+}
+
