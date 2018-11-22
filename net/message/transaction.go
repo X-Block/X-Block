@@ -45,3 +45,12 @@ func (msg trn) Handle(node Noder) error {
 	return nil
 }
 
+func reqTxnData(node Noder, hash common.Uint256) error {
+	var msg dataReq
+	msg.dataType = common.TRANSACTION
+	
+	buf, _ := msg.Serialization()
+	go node.Tx(buf)
+	return nil
+}
+
