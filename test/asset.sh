@@ -8,3 +8,8 @@ if [[ ! -f $CMD || ! -x $CMD ]]; then
 	cp ../$CMD .
 fi
 
+if [[ ! -f $CONFIG ]]; then
+	cp ../$CONFIG .
+fi
+
+
