@@ -20,3 +20,8 @@ type dataReq struct {
 }
 
 
+type trn struct {
+	msgHdr
+	txn transaction.Transaction
+}
+
