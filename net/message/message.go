@@ -203,3 +203,39 @@ func HandleNodeMsg(node Noder, buf []byte, len int) error {
 	return msg.Handle(node)
 }
 
+func magicVerify(magic uint32) bool {
+	if magic != NETMAGIC {
+		return false
+	}
+	return true
+}
+
+func PayloadLen(buf []byte) int {
+	var h msgHdr
+	h.Deserialization(buf)
+	return int(h.Length)
+}
+
+func checkSum(p []byte) []byte {
+	t := sha256.Sum256(p)
+	s := sha256.Sum256(t[:])
+
+
+	return s[:CHECKSUMLEN]
+}
+
+func reverse(input []byte) []byte {
+	if len(input) == 0 {
+		return input
+	}
+	return append(reverse(input[1:]), input[0])
+}
+
+func (hdr *msgHdr) init(cmd string, checksum []byte, length uint32) {
+	hdr.Magic = NETMAGIC
+	copy(hdr.CMD[0:uint32(len(cmd))], cmd)
+	copy(hdr.Checksum[:], checksum[:CHECKSUMLEN])
+	hdr.Length = length
+
+}
+
