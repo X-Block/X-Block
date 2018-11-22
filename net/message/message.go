@@ -177,3 +177,29 @@ func NewMsg(t string, n Noder) ([]byte, error) {
 }
 
 
+func HandleNodeMsg(node Noder, buf []byte, len int) error {
+	if len < MSGHDRLEN {
+		log.Warn("Unexpected size of received message")
+		return errors.New("Unexpected size of received message")
+	}
+
+	str := hex.EncodeToString(buf[:len])
+	log.Debug("Received data len: ", len, "\n", str)
+
+	s, err := MsgType(buf)
+	if err != nil {
+		log.Error("Message type parsing error")
+		return err
+	}
+
+	msg := AllocMsg(s, len)
+	if msg == nil {
+		log.Error(fmt.Sprintf("Allocation message %s failed", s))
+		return errors.New("Allocation message failed")
+	}
+	msg.Deserialization(buf[:len])
+	msg.Verify(buf[MSGHDRLEN:len])
+
+	return msg.Handle(node)
+}
+
