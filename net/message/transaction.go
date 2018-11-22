@@ -91,3 +91,12 @@ func (msg *dataReq) Deserialization(p []byte) error {
 	return nil
 }
 
+func NewTxnFromHash(hash common.Uint256) (*transaction.Transaction, error) {
+	txn, err := ledger.DefaultLedger.GetTransactionWithHash(hash)
+	if err != nil {
+		log.Error("Get transaction with hash error: ", err.Error())
+		return nil, err
+	}
+
+	return txn, nil
+}
