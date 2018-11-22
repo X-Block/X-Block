@@ -20,5 +20,9 @@ func TestNewEvent(t *testing.T) {
 	sub1 := event.Subscribe(EventReplyTx,subscriber1)
 	event.Subscribe(EventSaveBlock,subscriber2)
 
+	fmt.Println("Notify...")
+	event.Notify(EventReplyTx,nil)
+
+	
 
 }
