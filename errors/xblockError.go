@@ -15,3 +15,7 @@ func (e xblockError) GetErrCode()  ErrCode {
 	return e.code
 }
 
+func (e xblockError) GetRoot()  error {
+	return e.root
+}
+
