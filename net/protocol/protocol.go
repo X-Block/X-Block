@@ -25,3 +25,8 @@ const (
 	SERVICENODE = 2
 )
 
+const (
+	VERIFYNODENAME  = "verify"
+	SERVICENODENAME = "service"
+)
+
