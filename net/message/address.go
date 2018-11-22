@@ -27,3 +27,20 @@ const (
 	NODEADDRSIZE = 30
 )
 
+func newGetAddr() ([]byte, error) {
+	var msg addrReq
+	var sum []byte
+	sum = []byte{0x23, 0x72, 0x35, 0x24}
+	msg.Hdr.init("getaddr", sum, 0)
+
+	buf, err := msg.Serialization()
+	if err != nil {
+		return nil, err
+	}
+
+	str := hex.EncodeToString(buf)
+	log.Debug("The message get addr length is: ", len(buf), " ", str)
+
+	return buf, err
+}
+
