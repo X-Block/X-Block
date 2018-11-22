@@ -34,3 +34,20 @@ func (e *Event) Subscribe(eventtype EventType,eventfunc EventFunc) Subscriber {
 }
 
 
+func (e *Event) UnSubscribe(eventtype EventType,subscriber Subscriber) (err error){
+	e.m.Lock()
+	defer e.m.Unlock()
+
+	subEvent,ok := e.subscribers[eventtype]
+	if !ok {
+		err = errors.New("No event type.")
+		return
+	}
+
+	delete(subEvent,subscriber)
+	close(subscriber)
+
+	return
+}
+
+
