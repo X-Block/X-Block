@@ -263,3 +263,17 @@ func (msg *msgHdr) Deserialization(p []byte) error {
 	return err
 }
 
+func (hdr msgHdr) Serialization() ([]byte, error) {
+	var buf bytes.Buffer
+	err := binary.Write(&buf, binary.LittleEndian, hdr)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), err
+}
+
+func (hdr msgHdr) Handle(n Noder) error {
+	log.Debug()
+	return nil
+}
