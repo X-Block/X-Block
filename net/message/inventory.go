@@ -106,3 +106,42 @@ func (msg Inv) Verify(buf []byte) error {
 	return err
 }
 
+func (msg Inv) Handle(node Noder) error {
+	log.Debug()
+	var id Uint256
+	str := hex.EncodeToString(msg.P.Blk)
+	log.Debug(fmt.Sprintf("The inv type: 0x%x block len: %d, %s\n",
+		msg.P.InvType, len(msg.P.Blk), str))
+
+	invType := InventoryType(msg.P.InvType)
+	switch invType {
+	case TRANSACTION:
+		log.Debug("RX TRX message")
+		id.Deserialize(bytes.NewReader(msg.P.Blk[:32]))
+		if !node.ExistedID(id) {
+			reqTxnData(node, id)
+		}
+	case BLOCK:
+		log.Debug("RX block message")
+		var i uint32
+		count := msg.P.Cnt
+		log.Debug("RX inv-block message, hash is ", msg.P.Blk)
+		for i = 0; i < count; i++ {
+			id.Deserialize(bytes.NewReader(msg.P.Blk[HASHLEN*i:]))
+			if !ledger.DefaultLedger.Store.BlockInCache(id) &&
+				!ledger.DefaultLedger.BlockInLedger(id) {
+				log.Info("inv request block hash: ", id)
+				ReqBlkData(node, id)
+			}
+
+		}
+	case CONSENSUS:
+		log.Debug("RX consensus message")
+		id.Deserialize(bytes.NewReader(msg.P.Blk[:32]))
+		reqConsensusData(node, id)
+	default:
+		log.Warn("RX unknown inventory message")
+	}
+	return nil
+}
+
