@@ -149,3 +149,14 @@ func AllocMsg(t string, length int) Messager {
 	}
 }
 
+func MsgType(buf []byte) (string, error) {
+	cmd := buf[CMDOFFSET : CMDOFFSET+MSGCMDLEN]
+	n := bytes.IndexByte(cmd, 0)
+	if n < 0 || n >= MSGCMDLEN {
+		return "", errors.New("Unexpected length of CMD command")
+	}
+	s := string(cmd[:n])
+	return s, nil
+}
+
+
