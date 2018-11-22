@@ -44,3 +44,39 @@ func newGetAddr() ([]byte, error) {
 	return buf, err
 }
 
+func NewAddrs(nodeaddrs []NodeAddr, count uint64) ([]byte, error) {
+	var msg addr
+	msg.nodeAddrs = nodeaddrs
+	msg.nodeCnt = count
+	msg.hdr.Magic = NETMAGIC
+	cmd := "addr"
+	copy(msg.hdr.CMD[0:7], cmd)
+	p := new(bytes.Buffer)
+	err := binary.Write(p, binary.LittleEndian, msg.nodeCnt)
+	if err != nil {
+		log.Error("Binary Write failed at new Msg: ", err.Error())
+		return nil, err
+	}
+
+	err = binary.Write(p, binary.LittleEndian, msg.nodeAddrs)
+	if err != nil {
+		log.Error("Binary Write failed at new Msg: ", err.Error())
+		return nil, err
+	}
+	s := sha256.Sum256(p.Bytes())
+	s2 := s[:]
+	s = sha256.Sum256(s2)
+	buf := bytes.NewBuffer(s[:4])
+	binary.Read(buf, binary.LittleEndian, &(msg.hdr.Checksum))
+	msg.hdr.Length = uint32(len(p.Bytes()))
+	log.Debug("The message payload length is ", msg.hdr.Length)
+
+	m, err := msg.Serialization()
+	if err != nil {
+		log.Error("Error Convert net message ", err.Error())
+		return nil, err
+	}
+
+	return m, nil
+}
+
