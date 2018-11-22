@@ -160,3 +160,20 @@ func MsgType(buf []byte) (string, error) {
 }
 
 
+func NewMsg(t string, n Noder) ([]byte, error) {
+	switch t {
+	case "version":
+		return NewVersion(n)
+	case "verack":
+		return NewVerack()
+	case "getheaders":
+		return NewHeadersReq()
+	case "getaddr":
+		return newGetAddr()
+
+	default:
+		return nil, errors.New("Unknown message type")
+	}
+}
+
+
