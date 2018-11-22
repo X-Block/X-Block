@@ -114,3 +114,24 @@ func (msg *addrReq) Deserialization(p []byte) error {
 	return err
 }
 
+func (msg addr) Serialization() ([]byte, error) {
+	var buf bytes.Buffer
+	err := binary.Write(&buf, binary.LittleEndian, msg.hdr)
+
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(&buf, binary.LittleEndian, msg.nodeCnt)
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range msg.nodeAddrs {
+		err = binary.Write(&buf, binary.LittleEndian, v)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return buf.Bytes(), err
+}
+
