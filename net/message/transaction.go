@@ -13,3 +13,10 @@ import (
 	"errors"
 )
 
+type dataReq struct {
+	msgHdr
+	dataType common.InventoryType
+	hash     common.Uint256
+}
+
+
