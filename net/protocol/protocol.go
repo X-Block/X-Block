@@ -55,3 +55,12 @@ const (
 )
 
 
+const (
+	INIT       = 0
+	HAND       = 1
+	HANDSHAKE  = 2
+	HANDSHAKED = 3
+	ESTABLISH  = 4
+	INACTIVITY = 5
+)
+
