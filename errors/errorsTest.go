@@ -23,6 +23,16 @@ func TestNewDetailErr(t *testing.T) {
 
 	fmt.Println(msg)
 
-	
+	if msg == ""{
+		t.Errorf("CallStacksString should not return empty msg.")
+	}
+
+	rooterr := RootErr(e)
+	fmt.Println("Root: ",rooterr.Error())
+
+	code := ErrerCode(e)
+	fmt.Println("Code: ",code.Error())
+
+	fmt.Println("TestNewDetailErr End.")
 }
 
