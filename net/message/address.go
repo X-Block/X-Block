@@ -12,3 +12,8 @@ import (
 	"strconv"
 )
 
+type addrReq struct {
+	Hdr msgHdr
+	
+}
+
