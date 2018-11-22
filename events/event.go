@@ -67,3 +67,12 @@ func (e *Event) Notify(eventtype EventType,value interface{}) (err error){
 	return
 }
 
+func (e *Event) NotifySubscriber(eventfunc EventFunc, value interface{}) {
+	if eventfunc == nil { return }
+
+	
+	eventfunc(value)
+
+}
+
+
