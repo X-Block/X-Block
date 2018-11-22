@@ -151,3 +151,8 @@ err:
 	return err
 }
 
+func (msg addr) Verify(buf []byte) error {
+	err := msg.hdr.Verify(buf)
+	return err
+}
+
