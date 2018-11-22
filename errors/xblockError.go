@@ -11,3 +11,7 @@ func (e xblockError) Error() string {
 	return e.errmsg
 }
 
+func (e xblockError) GetErrCode()  ErrCode {
+	return e.code
+}
+
