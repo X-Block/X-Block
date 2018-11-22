@@ -6,4 +6,9 @@ import (
 	"fmt"
 )
 
+var (
+	TestRootError = errors.New("Test Root Error Msg.")
+)
+
+
 
