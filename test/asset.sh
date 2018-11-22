@@ -28,3 +28,14 @@ fi
 programhash=$(echo "$output" | grep "program hash" | awk -F : '{print $2}')
 
 
+output=$($CMD asset --reg --name XBlock --value 10000 --wallet $WALLET --password $PASSWD)
+if (( $? != 0 )); then
+	echo "asset registration failed"
+	exit 1
+fi
+assetid=$(getHashFromOutput "$output")
+echo "Asset ID: $assetid"
+
+sleep 6
+
+
