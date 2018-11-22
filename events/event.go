@@ -51,3 +51,19 @@ func (e *Event) UnSubscribe(eventtype EventType,subscriber Subscriber) (err erro
 }
 
 
+func (e *Event) Notify(eventtype EventType,value interface{}) (err error){
+	e.m.RLock()
+	defer e.m.RUnlock()
+
+	subs,ok := e.subscribers[eventtype]
+	if !ok {
+		err = errors.New("No event type.")
+		return
+	}
+
+	for _, event := range subs {
+		go e.NotifySubscriber(event,value)
+	}
+	return
+}
+
