@@ -57,3 +57,10 @@ func NewBlocksReq(n Noder) ([]byte, error) {
 	return m, err
 }
 
+func (msg blocksReq) Verify(buf []byte) error {
+
+
+	err := msg.msgHdr.Verify(buf)
+	return err
+}
+
