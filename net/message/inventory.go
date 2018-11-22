@@ -156,3 +156,99 @@ func (msg Inv) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func (msg *Inv) Deserialization(p []byte) error {
+	err := msg.Hdr.Deserialization(p)
+	if err != nil {
+		return err
+	}
+
+	buf := bytes.NewBuffer(p[MSGHDRLEN:])
+	invType, err := serialization.ReadUint8(buf)
+	if err != nil {
+		return err
+	}
+	msg.P.InvType = InventoryType(invType)
+	msg.P.Cnt, err = serialization.ReadUint32(buf)
+	if err != nil {
+		return err
+	}
+
+	msg.P.Blk = make([]byte, msg.P.Cnt*HASHLEN)
+	err = binary.Read(buf, binary.LittleEndian, &(msg.P.Blk))
+
+	return err
+}
+
+func (msg Inv) invType() InventoryType {
+	return msg.P.InvType
+}
+
+func GetInvFromBlockHash(starthash Uint256, stophash Uint256) (*InvPayload, error) {
+	var count uint32 = 0
+	var i uint32
+	var empty Uint256
+	var startheight uint32
+	var stopheight uint32
+	curHeight := ledger.DefaultLedger.GetLocalBlockChainHeight()
+	if starthash == empty {
+		if stophash == empty {
+			if curHeight > MAXBLKHDRCNT {
+				count = MAXBLKHDRCNT
+			} else {
+				count = curHeight
+			}
+		} else {
+			bkstop, err := ledger.DefaultLedger.GetBlockWithHash(stophash)
+			if err != nil {
+				return nil, err
+			}
+			stopheight = bkstop.Blockdata.Height
+			count = curHeight - stopheight
+			if curHeight > MAXINVHDRCNT {
+				count = MAXINVHDRCNT
+			}
+		}
+	} else {
+		bkstart, err := ledger.DefaultLedger.GetBlockWithHash(starthash)
+		if err != nil {
+			return nil, err
+		}
+		startheight = bkstart.Blockdata.Height
+		if stophash != empty {
+			bkstop, err := ledger.DefaultLedger.GetBlockWithHash(stophash)
+			if err != nil {
+				return nil, err
+			}
+			stopheight = bkstop.Blockdata.Height
+			count = startheight - stopheight
+			if count >= MAXINVHDRCNT {
+				count = MAXINVHDRCNT
+				stopheight = startheight + MAXINVHDRCNT
+			}
+		} else {
+
+			if startheight > MAXINVHDRCNT {
+				count = MAXINVHDRCNT
+			} else {
+				count = startheight
+			}
+		}
+	}
+	tmpBuffer := bytes.NewBuffer([]byte{})
+	for i = 1; i <= count; i++ {
+		hash, _ := ledger.DefaultLedger.Store.GetBlockHash(stopheight + i)
+		log.Debug("GetInvFromBlockHash i is ", i, " , hash is ", hash)
+		hash.Serialize(tmpBuffer)
+	}
+	log.Debug("GetInvFromBlockHash hash is ", tmpBuffer.Bytes())
+	return NewInvPayload(BLOCK, count, tmpBuffer.Bytes()), nil
+}
+
+func NewInvPayload(invType InventoryType, count uint32, msg []byte) *InvPayload {
+	return &InvPayload{
+		InvType: invType,
+		Cnt:     count,
+		Blk:     msg,
+	}
+}
+
