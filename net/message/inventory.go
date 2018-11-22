@@ -14,3 +14,12 @@ import (
 	"io"
 )
 
+type blocksReq struct {
+	msgHdr
+	p struct {
+		HeaderHashCount uint8
+		hashStart       [HASHLEN]byte
+		hashStop        [HASHLEN]byte
+	}
+}
+
