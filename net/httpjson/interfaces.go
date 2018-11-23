@@ -492,3 +492,18 @@ func sendSampleTransaction(params []interface{}) map[string]interface{} {
 	}
 }
 
+func setDebugInfo(params []interface{}) map[string]interface{} {
+	if len(params) < 1 {
+		return XBlockRpcInvalidParameter
+	}
+	switch params[0].(type) {
+	case float64:
+		level := params[0].(float64)
+		if err := log.Log.SetDebugLevel(int(level)); err != nil {
+			return XBlockRpcInvalidParameter
+		}
+	default:
+		return XBlockRpcInvalidParameter
+	}
+	return XBlockRpcSuccess
+}
