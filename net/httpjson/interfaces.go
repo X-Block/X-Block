@@ -257,3 +257,93 @@ func sendRawTransaction(params []interface{}) map[string]interface{} {
 	return XBlockRpc(ToHexString(hash.ToArray()))
 }
 
+func getUnspendOutput(params []interface{}) map[string]interface{} {
+	if len(params) < 2 {
+		return XBlockRpcNil
+	}
+	var programHash Uint160
+	var assetHash Uint256
+	switch params[0].(type) {
+	case string:
+		str := params[0].(string)
+		hex, err := hex.DecodeString(str)
+		if err != nil {
+			return XBlockRpcInvalidParameter
+		}
+		if err := programHash.Deserialize(bytes.NewReader(hex)); err != nil {
+			return XBlockRpcInvalidHash
+		}
+	default:
+		return XBlockRpcInvalidParameter
+	}
+
+	switch params[1].(type) {
+	case string:
+		str := params[1].(string)
+		hex, err := hex.DecodeString(str)
+		if err != nil {
+			return XBlockRpcInvalidParameter
+		}
+		if err := assetHash.Deserialize(bytes.NewReader(hex)); err != nil {
+			return XBlockRpcInvalidHash
+		}
+	default:
+		return XBlockRpcInvalidParameter
+	}
+	type TxOutputInfo struct {
+		AssetID     string
+		Value       int64
+		ProgramHash string
+	}
+	outputs := make(map[string]*TxOutputInfo)
+	height := ledger.DefaultLedger.GetLocalBlockChainHeight()
+	var i uint32
+	for i = 0; i <= height; i++ {
+		block, err := ledger.DefaultLedger.GetBlockWithHeight(i)
+		if err != nil {
+			return XBlockRpcInternalError
+		}
+		for _, t := range block.Transactions[1:] {
+			if t.TxType == tx.RegisterAsset {
+				continue
+			}
+			txHash := t.Hash()
+			txHashHex := ToHexString(txHash.ToArray())
+			for i, output := range t.Outputs {
+				if output.AssetID.CompareTo(assetHash) == 0 &&
+					output.ProgramHash.CompareTo(programHash) == 0 {
+					key := txHashHex + ":" + strconv.Itoa(i)
+					asset := ToHexString(output.AssetID.ToArray())
+					pHash := ToHexString(output.ProgramHash.ToArray())
+					value := int64(output.Value)
+					info := &TxOutputInfo{
+						asset,
+						value,
+						pHash,
+					}
+					outputs[key] = info
+				}
+			}
+		}
+	}
+	height = ledger.DefaultLedger.GetLocalBlockChainHeight()
+	for i = 0; i <= height; i++ {
+		block, err := ledger.DefaultLedger.GetBlockWithHeight(i)
+		if err != nil {
+			return XBlockRpcInternalError
+		}
+		for _, t := range block.Transactions[1:] {
+			if t.TxType == tx.RegisterAsset {
+				continue
+			}
+			for _, input := range t.UTXOInputs {
+				refer := ToHexString(input.ReferTxID.ToArray())
+				index := strconv.Itoa(int(input.ReferTxOutputIndex))
+				key := refer + ":" + index
+				delete(outputs, key)
+			}
+		}
+	}
+	return XBlockRpc(outputs)
+}
+
