@@ -12,3 +12,12 @@ import (
 	"errors"
 )
 
+type headersReq struct {
+	hdr msgHdr
+	p   struct {
+		len       uint8
+		hashStart [HASHLEN]byte
+		hashEnd   [HASHLEN]byte
+	}
+}
+
