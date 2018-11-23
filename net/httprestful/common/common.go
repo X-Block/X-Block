@@ -254,3 +254,22 @@ func SetPushBlockFlag(cmd map[string]interface{}) map[string]interface{} {
 	resp["Result"] = pushBlockFlag
 	return resp
 }
+func SetNoticeServerAddr(cmd map[string]interface{}) map[string]interface{} {
+	resp := ResponsePack(Err.SUCCESS)
+
+	addr, ok := cmd["Addr"].(string)
+	if !ok || len(addr) == 0 {
+		resp["Error"] = Err.INVALID_PARAMS
+		return resp
+	}
+	var reg *regexp.Regexp
+	pattern := `((http|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?`
+	reg = regexp.MustCompile(pattern)
+	if !reg.Match([]byte(addr)) {
+		resp["Error"] = Err.INVALID_PARAMS
+		return resp
+	}
+	Parameters.NoticeServerAddr = addr
+	resp["Result"] = Parameters.NoticeServerAddr
+	return resp
+}
