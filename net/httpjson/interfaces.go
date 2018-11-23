@@ -380,3 +380,19 @@ func getNeighbor(params []interface{}) map[string]interface{} {
 	return XBlockRpc(addr)
 }
 
+func getNodeState(params []interface{}) map[string]interface{} {
+	n := NodeInfo{
+		State:    uint(node.GetState()),
+		Time:     node.GetTime(),
+		Port:     node.GetPort(),
+		ID:       node.GetID(),
+		Version:  node.Version(),
+		Services: node.Services(),
+		Relay:    node.GetRelay(),
+		Height:   node.GetHeight(),
+		TxnCnt:   node.GetTxnCnt(),
+		RxTxnCnt: node.GetRxTxnCnt(),
+	}
+	return XBlockRpc(n)
+}
+
