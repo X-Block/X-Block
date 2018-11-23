@@ -410,3 +410,85 @@ func stopConsensus(params []interface{}) map[string]interface{} {
 	return XBlockRpcSuccess
 }
 
+func sendSampleTransaction(params []interface{}) map[string]interface{} {
+	if len(params) < 1 {
+		return XBlockRpcNil
+	}
+	var txType string
+	switch params[0].(type) {
+	case string:
+		txType = params[0].(string)
+	default:
+		return XBlockRpcInvalidParameter
+	}
+
+	issuer, err := account.NewAccount()
+	if err != nil {
+		return XBlockRpc("Failed to create account")
+	}
+	admin := issuer
+
+	rbuf := make([]byte, RANDBYTELEN)
+	rand.Read(rbuf)
+	switch string(txType) {
+	case "perf":
+		num := 1
+		if len(params) == 2 {
+			switch params[1].(type) {
+			case float64:
+				num = int(params[1].(float64))
+			}
+		}
+		for i := 0; i < num; i++ {
+			regTx := NewRegTx(ToHexString(rbuf), i, admin, issuer)
+			SignTx(admin, regTx)
+			VerifyAndSendTx(regTx)
+		}
+		return XBlockRpc(fmt.Sprintf("%d transaction(s) was sent", num))
+	case "bookkeeper":
+
+		if len(params) < 3 {
+			return XBlockRpcNil
+		}
+		ind := 4
+		switch params[1].(type) {
+		case float64:
+			ind = int(params[1].(float64))
+		}
+		var isAdd bool
+		switch params[2].(type) {
+		case string:
+			action := params[2].(string)
+			if action == "add" {
+				isAdd = true
+			} else if action == "sub" {
+				isAdd = false
+			} else {
+				return XBlockRpcInvalidParameter
+			}
+		default:
+			return XBlockRpcInvalidParameter
+		}
+
+		walletFile := "wallet" + strconv.Itoa(ind) + ".dat"
+		c := account.Open(walletFile, []byte(account.DefaultPin))
+		if c == nil {
+			return XBlockRpc("do not have wallet file:" + walletFile)
+		}
+
+		account, _ := c.GetDefaultAccount()
+		pubKey := account.PubKey()
+
+		cert := make([]byte, 100)
+		rand.Read(cert)
+
+		bkTx, _ := tx.NewBookKeeperTransaction(pubKey, isAdd, cert)
+		VerifyAndSendTx(bkTx)
+
+		return XBlockRpc(fmt.Sprint("bookkeeper transaction was sent, select pubkey file:", walletFile))
+
+	default:
+		return XBlockRpc("Invalid transacion type")
+	}
+}
+
