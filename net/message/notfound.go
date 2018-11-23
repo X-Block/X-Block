@@ -47,3 +47,8 @@ func NewNotFound(hash common.Uint256) ([]byte, error) {
 	return m, nil
 }
 
+func (msg notFound) Verify(buf []byte) error {
+	err := msg.msgHdr.Verify(buf)
+	return err
+}
+
