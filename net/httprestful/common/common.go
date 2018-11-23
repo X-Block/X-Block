@@ -35,3 +35,13 @@ func CheckPushBlock() bool {
 }
 
 
+func GetConnectionCount(cmd map[string]interface{}) map[string]interface{} {
+	resp := ResponsePack(Err.SUCCESS)
+	if node != nil {
+		resp["Result"] = node.GetConnectionCnt()
+	}
+
+	return resp
+}
+
+
