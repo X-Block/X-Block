@@ -19,3 +19,19 @@ import (
 	"time"
 )
 
+var node Noder
+var pushBlockFlag bool = true
+
+type ApiServer interface {
+	Start() error
+	Stop()
+}
+
+func SetNode(n Noder) {
+	node = n
+}
+func CheckPushBlock() bool {
+	return pushBlockFlag
+}
+
+
