@@ -188,3 +188,7 @@ func getBlockHash(params []interface{}) map[string]interface{} {
 	}
 }
 
+func getConnectionCount(params []interface{}) map[string]interface{} {
+	return XBlockRpc(node.GetConnectionCnt())
+}
+
