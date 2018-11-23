@@ -89,3 +89,29 @@ func (msg blkHeader) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func (msg *blkHeader) Deserialization(p []byte) error {
+	buf := bytes.NewBuffer(p)
+	err := binary.Read(buf, binary.LittleEndian, &(msg.hdr))
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(buf, binary.LittleEndian, &(msg.cnt))
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < int(msg.cnt); i++ {
+		var headers ledger.Header
+		err := (&headers).Deserialize(buf)
+		msg.blkHdr = append(msg.blkHdr, headers)
+		if err != nil {
+			log.Debug("blkHeader Deserialization failed")
+			goto blkHdrErr
+		}
+	}
+
+blkHdrErr:
+	return err
+}
+
