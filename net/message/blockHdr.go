@@ -21,3 +21,9 @@ type headersReq struct {
 	}
 }
 
+type blkHeader struct {
+	hdr    msgHdr
+	cnt    uint32
+	blkHdr []ledger.Header
+}
+
