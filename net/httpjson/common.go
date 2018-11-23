@@ -234,3 +234,11 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func responsePacking(result interface{}) map[string]interface{} {
+	resp := map[string]interface{}{
+		"result": result,
+	}
+	return resp
+}
+
+
