@@ -48,3 +48,8 @@ func NewHeadersReq() ([]byte, error) {
 	return m, err
 }
 
+func (msg headersReq) Verify(buf []byte) error {
+	err := msg.hdr.Verify(buf)
+	return err
+}
+
