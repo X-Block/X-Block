@@ -204,3 +204,30 @@ func getRawMemPool(params []interface{}) map[string]interface{} {
 	return XBlockRpc(txs)
 }
 
+func getRawTransaction(params []interface{}) map[string]interface{} {
+	if len(params) < 1 {
+		return XBlockRpcNil
+	}
+	switch params[0].(type) {
+	case string:
+		str := params[0].(string)
+		hex, err := hex.DecodeString(str)
+		if err != nil {
+			return XBlockRpcInvalidParameter
+		}
+		var hash Uint256
+		err = hash.Deserialize(bytes.NewReader(hex))
+		if err != nil {
+			return XBlockRpcInvalidTransaction
+		}
+		tx, err := ledger.DefaultLedger.Store.GetTransaction(hash)
+		if err != nil {
+			return XBlockRpcUnknownTransaction
+		}
+		tran := TransArryByteToHexString(tx)
+		return XBlockRpc(tran)
+	default:
+		return XBlockRpcInvalidParameter
+	}
+}
+
