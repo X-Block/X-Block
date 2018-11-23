@@ -103,3 +103,8 @@ func TransArryByteToHexString(ptx *tx.Transaction) *Transactions {
 	return trans
 }
 
+func getBestBlockHash(params []interface{}) map[string]interface{} {
+	hash := ledger.DefaultLedger.Blockchain.CurrentBlockHash()
+	return XBlockRpc(ToHexString(hash.ToArray()))
+}
+
