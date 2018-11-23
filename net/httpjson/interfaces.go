@@ -108,3 +108,62 @@ func getBestBlockHash(params []interface{}) map[string]interface{} {
 	return XBlockRpc(ToHexString(hash.ToArray()))
 }
 
+func getBlock(params []interface{}) map[string]interface{} {
+	if len(params) < 1 {
+		return XBlockRpcNil
+	}
+	var err error
+	var hash Uint256
+	switch (params[0]).(type) {
+	case float64:
+		index := uint32(params[0].(float64))
+		hash, err = ledger.DefaultLedger.Store.GetBlockHash(index)
+		if err != nil {
+			return XBlockRpcUnknownBlock
+		}
+	case string:
+		str := params[0].(string)
+		hex, err := hex.DecodeString(str)
+		if err != nil {
+			return XBlockRpcInvalidParameter
+		}
+		if err := hash.Deserialize(bytes.NewReader(hex)); err != nil {
+			return XBlockRpcInvalidTransaction
+		}
+	default:
+		return XBlockRpcInvalidParameter
+	}
+
+	block, err := ledger.DefaultLedger.Store.GetBlock(hash)
+	if err != nil {
+		return XBlockRpcUnknownBlock
+	}
+
+	blockHead := &BlockHead{
+		Version:          block.Blockdata.Version,
+		PrevBlockHash:    ToHexString(block.Blockdata.PrevBlockHash.ToArray()),
+		TransactionsRoot: ToHexString(block.Blockdata.TransactionsRoot.ToArray()),
+		Timestamp:        block.Blockdata.Timestamp,
+		Height:           block.Blockdata.Height,
+		ConsensusData:    block.Blockdata.ConsensusData,
+		NextBookKeeper:   ToHexString(block.Blockdata.NextBookKeeper.ToArray()),
+		Program: ProgramInfo{
+			Code:      ToHexString(block.Blockdata.Program.Code),
+			Parameter: ToHexString(block.Blockdata.Program.Parameter),
+		},
+		Hash: ToHexString(hash.ToArray()),
+	}
+
+	trans := make([]*Transactions, len(block.Transactions))
+	for i := 0; i < len(block.Transactions); i++ {
+		trans[i] = TransArryByteToHexString(block.Transactions[i])
+	}
+
+	b := BlockInfo{
+		Hash:         ToHexString(hash.ToArray()),
+		BlockData:    blockHead,
+		Transactions: trans,
+	}
+	return XBlockRpc(b)
+}
+
