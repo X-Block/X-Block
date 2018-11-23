@@ -171,3 +171,69 @@ func (msg blkHeader) Handle(node Noder) error {
 	return nil
 }
 
+func GetHeadersFromHash(startHash common.Uint256, stopHash common.Uint256) ([]ledger.Header, uint32, error) {
+	var count uint32 = 0
+	var empty [HASHLEN]byte
+	headers := []ledger.Header{}
+	var startHeight uint32
+	var stopHeight uint32
+	curHeight := ledger.DefaultLedger.GetLocalBlockChainHeight()
+	if startHash == empty {
+		if stopHash == empty {
+			if curHeight > MAXBLKHDRCNT {
+				count = MAXBLKHDRCNT
+			} else {
+				count = curHeight
+			}
+		} else {
+			bkstop, err := ledger.DefaultLedger.GetBlockWithHash(stopHash)
+			if err != nil {
+				return nil, 0, err
+			}
+			stopHeight = bkstop.Blockdata.Height
+			count = curHeight - stopHeight
+			if curHeight > MAXBLKHDRCNT {
+				count = MAXBLKHDRCNT
+			}
+		}
+	} else {
+		bkstart, err := ledger.DefaultLedger.GetBlockWithHash(startHash)
+		if err != nil {
+			return nil, 0, err
+		}
+		startHeight = bkstart.Blockdata.Height
+		if stopHash != empty {
+			bkstop, err := ledger.DefaultLedger.GetBlockWithHash(stopHash)
+			if err != nil {
+				return nil, 0, err
+			}
+			stopHeight = bkstop.Blockdata.Height
+			count = startHeight - stopHeight
+			if count >= MAXBLKHDRCNT {
+				count = MAXBLKHDRCNT
+				stopHeight = startHeight + MAXBLKHDRCNT
+			}
+		} else {
+
+			if startHeight > MAXBLKHDRCNT {
+				count = MAXBLKHDRCNT
+			} else {
+				count = startHeight
+			}
+		}
+	}
+
+	var i uint32
+	for i = 1; i <= count; i++ {
+		hash, err := ledger.DefaultLedger.Store.GetBlockHash(stopHeight + i)
+		hd, err := ledger.DefaultLedger.Store.GetHeader(hash)
+		if err != nil {
+			log.Error("GetBlockWithHeight failed ", err.Error())
+			return nil, 0, err
+		}
+		headers = append(headers, *hd)
+	}
+
+	return headers, count, nil
+}
+
