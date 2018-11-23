@@ -58,3 +58,14 @@ func (msg blkHeader) Verify(buf []byte) error {
 	return err
 }
 
+func (msg headersReq) Serialization() ([]byte, error) {
+	var buf bytes.Buffer
+
+	err := binary.Write(&buf, binary.LittleEndian, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), err
+}
+
