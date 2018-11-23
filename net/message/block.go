@@ -150,3 +150,14 @@ func (msg block) Verify(buf []byte) error {
 	return err
 }
 
+func (msg block) Serialization() ([]byte, error) {
+	hdrBuf, err := msg.msgHdr.Serialization()
+	if err != nil {
+		return nil, err
+	}
+	buf := bytes.NewBuffer(hdrBuf)
+	msg.blk.Serialize(buf)
+
+	return buf.Bytes(), err
+}
+
