@@ -80,3 +80,35 @@ func NewBlockFromHash(hash common.Uint256) (*ledger.Block, error) {
 	return bk, nil
 }
 
+func NewBlock(bk *ledger.Block) ([]byte, error) {
+	log.Debug()
+	var msg block
+	msg.blk = *bk
+	msg.msgHdr.Magic = NETMAGIC
+	cmd := "block"
+	copy(msg.msgHdr.CMD[0:len(cmd)], cmd)
+	tmpBuffer := bytes.NewBuffer([]byte{})
+	bk.Serialize(tmpBuffer)
+	p := new(bytes.Buffer)
+	err := binary.Write(p, binary.LittleEndian, tmpBuffer.Bytes())
+	if err != nil {
+		log.Error("Binary Write failed at new Msg")
+		return nil, err
+	}
+	s := sha256.Sum256(p.Bytes())
+	s2 := s[:]
+	s = sha256.Sum256(s2)
+	buf := bytes.NewBuffer(s[:4])
+	binary.Read(buf, binary.LittleEndian, &(msg.msgHdr.Checksum))
+	msg.msgHdr.Length = uint32(len(p.Bytes()))
+	log.Debug("The message payload length is ", msg.msgHdr.Length)
+
+	m, err := msg.Serialization()
+	if err != nil {
+		log.Error("Error Convert net message ", err.Error())
+		return nil, err
+	}
+
+	return m, nil
+}
+
