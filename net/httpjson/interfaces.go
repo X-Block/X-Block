@@ -396,3 +396,17 @@ func getNodeState(params []interface{}) map[string]interface{} {
 	return XBlockRpc(n)
 }
 
+func startConsensus(params []interface{}) map[string]interface{} {
+	if err := dBFT.Start(); err != nil {
+		return XBlockRpcFailed
+	}
+	return XBlockRpcSuccess
+}
+
+func stopConsensus(params []interface{}) map[string]interface{} {
+	if err := dBFT.Halt(); err != nil {
+		return XBlockRpcFailed
+	}
+	return XBlockRpcSuccess
+}
+
