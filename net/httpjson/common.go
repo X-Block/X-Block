@@ -268,3 +268,24 @@ func Call(address string, method string, id interface{}, params []interface{}) (
 	return body, nil
 }
 
+func VerifyAndSendTx(txn *tx.Transaction) error {
+	hash := txn.Hash()
+	hex := ToHexString(hash.ToArray())
+
+	if err := validation.VerifyTransaction(txn); err != nil {
+		log.Warn("Transaction verification failed", hex)
+		return errors.New("Transaction verification failed")
+	}
+	if err := validation.VerifyTransactionWithLedger(txn, ledger.DefaultLedger); err != nil {
+		log.Warn("Transaction verification with ledger failed", hex)
+		return errors.New("Transaction verification with ledger failed")
+	}
+	if !node.AppendTxnPool(txn) {
+		log.Warn("Can NOT add the transaction to TxnPool")
+	}
+	if err := node.Xmit(txn); err != nil {
+		log.Error("Xmit Tx Error")
+		return errors.New("Xmit transaction failed")
+	}
+	return nil
+}
