@@ -507,3 +507,7 @@ func setDebugInfo(params []interface{}) map[string]interface{} {
 	}
 	return XBlockRpcSuccess
 }
+
+func getVersion(params []interface{}) map[string]interface{} {
+	return XBlockRpc(config.Version)
+}
