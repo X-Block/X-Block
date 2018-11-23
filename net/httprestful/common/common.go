@@ -105,3 +105,27 @@ func GetBlockByHash(cmd map[string]interface{}) map[string]interface{} {
 
 	return resp
 }
+func GetBlockByHeight(cmd map[string]interface{}) map[string]interface{} {
+	resp := ResponsePack(Err.SUCCESS)
+
+	param := cmd["Height"].(string)
+	if len(param) == 0 {
+		resp["Error"] = Err.INVALID_PARAMS
+		return resp
+	}
+	height, err := strconv.ParseInt(param, 10, 64)
+	if err != nil {
+		resp["Error"] = Err.INVALID_PARAMS
+		return resp
+	}
+	index := uint32(height)
+	hash, err := ledger.DefaultLedger.Store.GetBlockHash(index)
+	if err != nil {
+		resp["Error"] = Err.UNKNOWN_BLOCK
+		return resp
+	}
+	resp["Result"], resp["Error"] = getBlock(hash)
+	return resp
+}
+
+
