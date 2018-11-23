@@ -347,3 +347,36 @@ func getUnspendOutput(params []interface{}) map[string]interface{} {
 	return XBlockRpc(outputs)
 }
 
+func getTxout(params []interface{}) map[string]interface{} {
+	return XBlockRpcUnsupported
+}
+
+func submitBlock(params []interface{}) map[string]interface{} {
+	if len(params) < 1 {
+		return XBlockRpcNil
+	}
+	switch params[0].(type) {
+	case string:
+		str := params[0].(string)
+		hex, _ := hex.DecodeString(str)
+		var block ledger.Block
+		if err := block.Deserialize(bytes.NewReader(hex)); err != nil {
+			return XBlockRpcInvalidBlock
+		}
+		if err := ledger.DefaultLedger.Blockchain.AddBlock(&block); err != nil {
+			return XBlockRpcInvalidBlock
+		}
+		if err := node.Xmit(&block); err != nil {
+			return XBlockRpcInternalError
+		}
+	default:
+		return XBlockRpcInvalidParameter
+	}
+	return XBlockRpcSuccess
+}
+
+func getNeighbor(params []interface{}) map[string]interface{} {
+	addr, _ := node.GetNeighborAddrs()
+	return XBlockRpc(addr)
+}
+
