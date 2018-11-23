@@ -115,3 +115,21 @@ blkHdrErr:
 	return err
 }
 
+func (msg headersReq) Handle(node Noder) error {
+	log.Debug()
+	var startHash [HASHLEN]byte
+	var stopHash [HASHLEN]byte
+	startHash = msg.p.hashStart
+	stopHash = msg.p.hashEnd
+	headers, cnt, err := GetHeadersFromHash(startHash, stopHash)
+	if err != nil {
+		return err
+	}
+	buf, err := NewHeaders(headers, cnt)
+	if err != nil {
+		return err
+	}
+	go node.Tx(buf)
+	return nil
+}
+
