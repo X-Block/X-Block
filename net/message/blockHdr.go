@@ -155,3 +155,19 @@ func ReqBlkHdrFromOthers(node Noder) {
 	}
 }
 
+func (msg blkHeader) Handle(node Noder) error {
+	log.Debug()
+	node.StopRetryTimer()
+	err := ledger.DefaultLedger.Store.AddHeaders(msg.blkHdr, ledger.DefaultLedger)
+	if err != nil {
+		log.Warn("Add block Header error")
+		ReqBlkHdrFromOthers(node)
+		return errors.New("Add block Header error, send new header request to another node\n")
+	}
+	if msg.cnt == MAXBLKHDRCNT {
+		SendMsgSyncHeaders(node)
+		node.StartRetryTimer()
+	}
+	return nil
+}
+
