@@ -69,3 +69,9 @@ func (msg headersReq) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func (msg *headersReq) Deserialization(p []byte) error {
+	buf := bytes.NewBuffer(p)
+	err := binary.Read(buf, binary.LittleEndian, &msg)
+	return err
+}
+
