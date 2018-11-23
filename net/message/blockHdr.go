@@ -133,3 +133,14 @@ func (msg headersReq) Handle(node Noder) error {
 	return nil
 }
 
+func SendMsgSyncHeaders(node Noder) {
+	buf, err := NewHeadersReq()
+	if err != nil {
+		log.Error("failed build a new headersReq")
+	} else {
+		node.LocalNode().SetSyncHeaders(true)
+		node.SetSyncHeaders(true)
+		go node.Tx(buf)
+	}
+}
+
