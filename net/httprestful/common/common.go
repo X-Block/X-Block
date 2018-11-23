@@ -154,3 +154,27 @@ func GetAssetByHash(cmd map[string]interface{}) map[string]interface{} {
 }
 
 
+func GetTransactionByHash(cmd map[string]interface{}) map[string]interface{} {
+	resp := ResponsePack(Err.SUCCESS)
+
+	str := cmd["Hash"].(string)
+	hex, err := hex.DecodeString(str)
+	if err != nil {
+		resp["Error"] = Err.INVALID_PARAMS
+		return resp
+	}
+	var hash Uint256
+	err = hash.Deserialize(bytes.NewReader(hex))
+	if err != nil {
+		resp["Error"] = Err.INVALID_TRANSACTION
+		return resp
+	}
+	tx, err := ledger.DefaultLedger.Store.GetTransaction(hash)
+	if err != nil {
+		resp["Error"] = Err.UNKNOWN_TRANSACTION
+		return resp
+	}
+	tran := TransArryByteToHexString(tx)
+	resp["Result"] = tran
+	return resp
+}
