@@ -53,3 +53,8 @@ func (msg headersReq) Verify(buf []byte) error {
 	return err
 }
 
+func (msg blkHeader) Verify(buf []byte) error {
+	err := msg.hdr.Verify(buf)
+	return err
+}
+
