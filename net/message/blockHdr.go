@@ -27,3 +27,24 @@ type blkHeader struct {
 	blkHdr []ledger.Header
 }
 
+func NewHeadersReq() ([]byte, error) {
+	var h headersReq
+
+	h.p.len = 1
+	buf := ledger.DefaultLedger.Store.GetCurrentHeaderHash()
+	copy(h.p.hashEnd[:], reverse(buf[:]))
+
+	p := new(bytes.Buffer)
+	err := binary.Write(p, binary.LittleEndian, &(h.p))
+	if err != nil {
+		log.Error("Binary Write failed at new headersReq")
+		return nil, err
+	}
+
+	s := checkSum(p.Bytes())
+	h.hdr.init("getheaders", s, uint32(len(p.Bytes())))
+
+	m, err := h.Serialization()
+	return m, err
+}
+
