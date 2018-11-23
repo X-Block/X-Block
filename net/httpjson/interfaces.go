@@ -231,3 +231,29 @@ func getRawTransaction(params []interface{}) map[string]interface{} {
 	}
 }
 
+func sendRawTransaction(params []interface{}) map[string]interface{} {
+	if len(params) < 1 {
+		return XBlockRpcNil
+	}
+	var hash Uint256
+	switch params[0].(type) {
+	case string:
+		str := params[0].(string)
+		hex, err := hex.DecodeString(str)
+		if err != nil {
+			return XBlockRpcInvalidParameter
+		}
+		var txn tx.Transaction
+		if err := txn.Deserialize(bytes.NewReader(hex)); err != nil {
+			return XBlockRpcInvalidTransaction
+		}
+		hash = txn.Hash()
+		if err := VerifyAndSendTx(&txn); err != nil {
+			return XBlockRpcInternalError
+		}
+	default:
+		return XBlockRpcInvalidParameter
+	}
+	return XBlockRpc(ToHexString(hash.ToArray()))
+}
+
