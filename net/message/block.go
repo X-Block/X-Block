@@ -37,3 +37,37 @@ func (msg block) Handle(node Noder) error {
 	return nil
 }
 
+func (msg dataReq) Handle(node Noder) error {
+	log.Debug()
+	reqtype := common.InventoryType(msg.dataType)
+	hash := msg.hash
+	switch reqtype {
+	case common.BLOCK:
+		block, err := NewBlockFromHash(hash)
+		if err != nil {
+			log.Error("Can't get block from hash: ", hash, " ,send not found message")
+			b, err := NewNotFound(hash)
+			node.Tx(b)
+			return err
+		}
+		log.Debug("block height is ", block.Blockdata.Height, " ,hash is ", hash)
+		buf, err := NewBlock(block)
+		if err != nil {
+			return err
+		}
+		node.Tx(buf)
+
+	case common.TRANSACTION:
+		txn, err := NewTxnFromHash(hash)
+		if err != nil {
+			return err
+		}
+		buf, err := NewTxn(txn)
+		if err != nil {
+			return err
+		}
+		go node.Tx(buf)
+	}
+	return nil
+}
+
