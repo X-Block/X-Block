@@ -144,3 +144,14 @@ func SendMsgSyncHeaders(node Noder) {
 	}
 }
 
+func ReqBlkHdrFromOthers(node Noder) {
+	node.SetSyncFailed()
+	noders := node.LocalNode().GetNeighborNoder()
+	for _, noder := range noders {
+		if noder.IsSyncFailed() != true {
+			SendMsgSyncHeaders(noder)
+			break
+		}
+	}
+}
+
