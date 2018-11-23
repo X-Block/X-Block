@@ -237,3 +237,36 @@ func GetHeadersFromHash(startHash common.Uint256, stopHash common.Uint256) ([]le
 	return headers, count, nil
 }
 
+func NewHeaders(headers []ledger.Header, count uint32) ([]byte, error) {
+	var msg blkHeader
+	msg.cnt = count
+	msg.blkHdr = headers
+	msg.hdr.Magic = NETMAGIC
+	cmd := "headers"
+	copy(msg.hdr.CMD[0:len(cmd)], cmd)
+
+	tmpBuffer := bytes.NewBuffer([]byte{})
+	serialization.WriteUint32(tmpBuffer, msg.cnt)
+	for _, header := range headers {
+		header.Serialize(tmpBuffer)
+	}
+	b := new(bytes.Buffer)
+	err := binary.Write(b, binary.LittleEndian, tmpBuffer.Bytes())
+	if err != nil {
+		log.Error("Binary Write failed at new Msg")
+		return nil, err
+	}
+	s := sha256.Sum256(b.Bytes())
+	s2 := s[:]
+	s = sha256.Sum256(s2)
+	buf := bytes.NewBuffer(s[:4])
+	binary.Read(buf, binary.LittleEndian, &(msg.hdr.Checksum))
+	msg.hdr.Length = uint32(len(b.Bytes()))
+
+	m, err := msg.Serialization()
+	if err != nil {
+		log.Error("Error Convert net message ", err.Error())
+		return nil, err
+	}
+	return m, nil
+}
