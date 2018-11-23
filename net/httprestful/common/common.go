@@ -83,3 +83,25 @@ func getBlock(hash Uint256) (interface{}, int64) {
 	}
 	return b, Err.SUCCESS
 }
+func GetBlockByHash(cmd map[string]interface{}) map[string]interface{} {
+	resp := ResponsePack(Err.SUCCESS)
+	param := cmd["Hash"].(string)
+	if len(param) == 0 {
+		resp["Error"] = Err.INVALID_PARAMS
+		return resp
+	}
+	var hash Uint256
+	hex, err := hex.DecodeString(param)
+	if err != nil {
+		resp["Error"] = Err.INVALID_PARAMS
+		return resp
+	}
+	if err := hash.Deserialize(bytes.NewReader(hex)); err != nil {
+		resp["Error"] = Err.INVALID_TRANSACTION
+		return resp
+	}
+
+	resp["Result"], resp["Error"] = getBlock(hash)
+
+	return resp
+}
