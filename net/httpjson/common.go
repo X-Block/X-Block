@@ -138,3 +138,27 @@ type ConsensusInfo struct {
 	
 }
 
+func RegistRpcNode(n Noder) {
+	if node == nil {
+		node = n
+	}
+}
+
+func RegistDbftService(d *dbft.DbftService) {
+	if dBFT == nil {
+		dBFT = d
+	}
+}
+
+
+func HandleFunc(pattern string, handler func([]interface{}) map[string]interface{}) {
+	mainMux.Lock()
+	defer mainMux.Unlock()
+	mainMux.m[pattern] = handler
+}
+
+
+func SetDefaultFunc(def func(http.ResponseWriter, *http.Request)) {
+	mainMux.defaultFunction = def
+}
+
