@@ -129,3 +129,28 @@ func GetBlockByHeight(cmd map[string]interface{}) map[string]interface{} {
 }
 
 
+func GetAssetByHash(cmd map[string]interface{}) map[string]interface{} {
+	resp := ResponsePack(Err.SUCCESS)
+
+	str := cmd["Hash"].(string)
+	hex, err := hex.DecodeString(str)
+	if err != nil {
+		resp["Error"] = Err.INVALID_PARAMS
+		return resp
+	}
+	var hash Uint256
+	err = hash.Deserialize(bytes.NewReader(hex))
+	if err != nil {
+		resp["Error"] = Err.INVALID_TRANSACTION
+		return resp
+	}
+	asset, err := ledger.DefaultLedger.Store.GetAsset(hash)
+	if err != nil {
+		resp["Error"] = Err.UNKNOWN_TRANSACTION
+		return resp
+	}
+	resp["Result"] = asset
+	return resp
+}
+
+
