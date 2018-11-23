@@ -233,3 +233,24 @@ func SetOauthServerAddr(cmd map[string]interface{}) map[string]interface{} {
 	resp["Result"] = Parameters.OauthServerAddr
 	return resp
 }
+func GetNoticeServerAddr(cmd map[string]interface{}) map[string]interface{} {
+	resp := ResponsePack(Err.SUCCESS)
+	resp["Result"] = Parameters.NoticeServerAddr
+	return resp
+}
+
+func SetPushBlockFlag(cmd map[string]interface{}) map[string]interface{} {
+	resp := ResponsePack(Err.SUCCESS)
+	start, ok := cmd["Open"].(bool)
+	if !ok {
+		resp["Error"] = Err.INVALID_PARAMS
+		return resp
+	}
+	if start {
+		pushBlockFlag = true
+	} else {
+		pushBlockFlag = false
+	}
+	resp["Result"] = pushBlockFlag
+	return resp
+}
