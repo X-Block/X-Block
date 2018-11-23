@@ -63,3 +63,21 @@ func (msg notFound) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func (msg *notFound) Deserialization(p []byte) error {
+	buf := bytes.NewBuffer(p)
+
+	err := binary.Read(buf, binary.LittleEndian, &(msg.msgHdr))
+	if err != nil {
+		log.Warn("Parse notfound message hdr error")
+		return errors.New("Parse notfound message hdr error")
+	}
+
+	err = msg.hash.Deserialize(buf)
+	if err != nil {
+		log.Warn("Parse notfound message error")
+		return errors.New("Parse notfound message error")
+	}
+
+	return err
+}
+
