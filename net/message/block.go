@@ -145,3 +145,8 @@ func ReqBlkData(node Noder, hash common.Uint256) error {
 	return nil
 }
 
+func (msg block) Verify(buf []byte) error {
+	err := msg.msgHdr.Verify(buf)
+	return err
+}
+
