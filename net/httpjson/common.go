@@ -162,3 +162,75 @@ func SetDefaultFunc(def func(http.ResponseWriter, *http.Request)) {
 	mainMux.defaultFunction = def
 }
 
+func Handle(w http.ResponseWriter, r *http.Request) {
+	mainMux.RLock()
+	defer mainMux.RUnlock()
+	if r.Method != "POST" {
+		if mainMux.defaultFunction != nil {
+			log.Info("HTTP JSON RPC Handle - Method!=\"POST\"")
+			mainMux.defaultFunction(w, r)
+			return
+		} else {
+			log.Warn("HTTP JSON RPC Handle - Method!=\"POST\"")
+			return
+		}
+	}
+
+	if r.Body == nil {
+		if mainMux.defaultFunction != nil {
+			log.Info("HTTP JSON RPC Handle - Request body is nil")
+			mainMux.defaultFunction(w, r)
+			return
+		} else {
+			log.Warn("HTTP JSON RPC Handle - Request body is nil")
+			return
+		}
+	}
+
+	
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Error("HTTP JSON RPC Handle - ioutil.ReadAll: ", err)
+		return
+	}
+	request := make(map[string]interface{})
+	err = json.Unmarshal(body, &request)
+	if err != nil {
+		log.Error("HTTP JSON RPC Handle - json.Unmarshal: ", err)
+		return
+	}
+
+	
+	function, ok := mainMux.m[request["method"].(string)]
+	if ok {
+		response := function(request["params"].([]interface{}))
+		data, err := json.Marshal(map[string]interface{}{
+			"jsonpc": "2.0",
+			"result": response["result"],
+			"id":     request["id"],
+		})
+		if err != nil {
+			log.Error("HTTP JSON RPC Handle - json.Marshal: ", err)
+			return
+		}
+		w.Write(data)
+	} else {
+		
+		log.Warn("HTTP JSON RPC Handle - No function to call for ", request["method"])
+		data, err := json.Marshal(map[string]interface{}{
+			"result": nil,
+			"error": map[string]interface{}{
+				"code":    -32601,
+				"message": "Method not found",
+				"data":    "The called method was not found on the server",
+			},
+			"id": request["id"],
+		})
+		if err != nil {
+			log.Error("HTTP JSON RPC Handle - json.Marshal: ", err)
+			return
+		}
+		w.Write(data)
+	}
+}
+
