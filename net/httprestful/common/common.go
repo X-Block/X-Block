@@ -207,3 +207,29 @@ func SendRawTransaction(cmd map[string]interface{}) map[string]interface{} {
 }
 
 
+func GetOauthServerAddr(cmd map[string]interface{}) map[string]interface{} {
+	resp := ResponsePack(Err.SUCCESS)
+	resp["Result"] = Parameters.OauthServerAddr
+	return resp
+}
+func SetOauthServerAddr(cmd map[string]interface{}) map[string]interface{} {
+	resp := ResponsePack(Err.SUCCESS)
+
+	addr, ok := cmd["Addr"].(string)
+	if !ok {
+		resp["Error"] = Err.INVALID_PARAMS
+		return resp
+	}
+	if len(addr) > 0 {
+		var reg *regexp.Regexp
+		pattern := `((http|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?`
+		reg = regexp.MustCompile(pattern)
+		if !reg.Match([]byte(addr)) {
+			resp["Error"] = Err.INVALID_PARAMS
+			return resp
+		}
+	}
+	Parameters.OauthServerAddr = addr
+	resp["Result"] = Parameters.OauthServerAddr
+	return resp
+}
