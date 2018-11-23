@@ -12,3 +12,7 @@ import (
 	"errors"
 )
 
+type blockReq struct {
+	msgHdr
+}
+
