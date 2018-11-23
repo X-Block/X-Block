@@ -178,3 +178,32 @@ func GetTransactionByHash(cmd map[string]interface{}) map[string]interface{} {
 	resp["Result"] = tran
 	return resp
 }
+func SendRawTransaction(cmd map[string]interface{}) map[string]interface{} {
+	resp := ResponsePack(Err.SUCCESS)
+
+	str, ok := cmd["Data"].(string)
+	if !ok {
+		resp["Error"] = Err.INVALID_PARAMS
+		return resp
+	}
+	hex, err := hex.DecodeString(str)
+	if err != nil {
+		resp["Error"] = Err.INVALID_PARAMS
+		return resp
+	}
+	var txn tx.Transaction
+	if err := txn.Deserialize(bytes.NewReader(hex)); err != nil {
+		resp["Error"] = Err.INVALID_TRANSACTION
+		return resp
+	}
+	var hash Uint256
+	hash = txn.Hash()
+	if err := VerifyAndSendTx(&txn); err != nil {
+		resp["Error"] = Err.INTERNAL_ERROR
+		return resp
+	}
+	resp["Result"] = ToHexString(hash.ToArray())
+	return resp
+}
+
+
