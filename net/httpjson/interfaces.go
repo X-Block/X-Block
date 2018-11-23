@@ -167,3 +167,24 @@ func getBlock(params []interface{}) map[string]interface{} {
 	return XBlockRpc(b)
 }
 
+func getBlockCount(params []interface{}) map[string]interface{} {
+	return XBlockRpc(ledger.DefaultLedger.Blockchain.BlockHeight + 1)
+}
+
+func getBlockHash(params []interface{}) map[string]interface{} {
+	if len(params) < 1 {
+		return XBlockRpcNil
+	}
+	switch params[0].(type) {
+	case float64:
+		height := uint32(params[0].(float64))
+		hash, err := ledger.DefaultLedger.Store.GetBlockHash(height)
+		if err != nil {
+			return XBlockRpcUnknownBlock
+		}
+		return XBlockRpc(fmt.Sprintf("%016x", hash))
+	default:
+		return XBlockRpcInvalidParameter
+	}
+}
+
