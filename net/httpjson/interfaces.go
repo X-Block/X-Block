@@ -192,3 +192,15 @@ func getConnectionCount(params []interface{}) map[string]interface{} {
 	return XBlockRpc(node.GetConnectionCnt())
 }
 
+func getRawMemPool(params []interface{}) map[string]interface{} {
+	txs := []*Transactions{}
+	txpool := node.GetTxnPool(false)
+	for _, t := range txpool {
+		txs = append(txs, TransArryByteToHexString(t))
+	}
+	if len(txs) == 0 {
+		return XBlockRpcNil
+	}
+	return XBlockRpc(txs)
+}
+
