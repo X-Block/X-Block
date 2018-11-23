@@ -10,3 +10,8 @@ import (
 	"errors"
 )
 
+type notFound struct {
+	msgHdr
+	hash common.Uint256
+}
+
