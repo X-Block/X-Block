@@ -16,3 +16,8 @@ type blockReq struct {
 	msgHdr
 }
 
+type block struct {
+	msgHdr
+	blk ledger.Block
+}
+
