@@ -75,3 +75,17 @@ func (msg *headersReq) Deserialization(p []byte) error {
 	return err
 }
 
+func (msg blkHeader) Serialization() ([]byte, error) {
+	hdrBuf, err := msg.hdr.Serialization()
+	if err != nil {
+		return nil, err
+	}
+	buf := bytes.NewBuffer(hdrBuf)
+	binary.Write(buf, binary.LittleEndian, msg.cnt)
+
+	for _, header := range msg.blkHdr {
+		header.Serialize(buf)
+	}
+	return buf.Bytes(), err
+}
+
