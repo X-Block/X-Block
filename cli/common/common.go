@@ -17,3 +17,12 @@ var (
 	Port string
 )
 
+func NewIpFlag() cli.Flag {
+	return cli.StringFlag{
+		Name:        "ip",
+		Usage:       "node's ip address",
+		Value:       "localhost",
+		Destination: &Ip,
+	}
+}
+
