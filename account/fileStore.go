@@ -190,3 +190,26 @@ func (cs *FileStore) LoadContractData(index int) ([]byte, []byte, []byte, error)
 	return scriptHash, publickeyHash, rawData, err
 }
 
+func (cs *FileStore) SaveContractData(ct *ct.Contract) error {
+	jsondata, err := cs.readDB()
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(jsondata, &cs.fd)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	cs.fd.ScriptHash = fmt.Sprintf("%x", ct.ProgramHash.ToArray())
+	cs.fd.PublicKeyHash = fmt.Sprintf("%x", ct.OwnerPubkeyHash.ToArray())
+	cs.fd.RawData = fmt.Sprintf("%x", ct.ToArray())
+
+	jsonblob, err := json.Marshal(cs.fd)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	cs.writeDB(jsonblob)
+	return nil
+}
