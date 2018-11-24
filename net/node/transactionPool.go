@@ -46,3 +46,12 @@ func (txnPool *TXNPool) GetTxnPool(cleanPool bool) map[common.Uint256]*transacti
 	return DeepCopy(list)
 }
 
+func DeepCopy(mapIn map[common.Uint256]*transaction.Transaction) map[common.Uint256]*transaction.Transaction {
+	reply := make(map[common.Uint256]*transaction.Transaction)
+	for k, v := range mapIn {
+		reply[k] = v
+	}
+	return reply
+}
+
+
