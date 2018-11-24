@@ -161,6 +161,9 @@ func NewCommand() *cli.Command {
 			},
 		},
 		Action: infoAction,
-		
+		OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
+			PrintError(c, err, "info")
+			return cli.NewExitError("", 1)
+		},
 	}
 }
