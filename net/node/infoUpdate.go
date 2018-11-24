@@ -157,3 +157,21 @@ func (node *node) TryConnect() {
 
 }
 
+func (node *node) updateNodeInfo() {
+	ticker := time.NewTicker(time.Second * PERIODUPDATETIME)
+	quit := make(chan struct{})
+	for {
+		select {
+		case <-ticker.C:
+			node.ConnectSeeds()
+			node.SendPingToNbr()
+			node.GetBlkHdrs()
+			node.SyncBlk()
+			node.HeartBeatMonitor()
+			node.TryConnect()
+		case <-quit:
+			ticker.Stop()
+			return
+		}
+	}
+}
