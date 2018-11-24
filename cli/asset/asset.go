@@ -46,3 +46,27 @@ func openWallet(name string, passwd []byte) account.Client {
 	return wallet
 }
 
+func getUintHash(programHashStr, assetHashStr string) (Uint160, Uint256, error) {
+	programHashHex, err := hex.DecodeString(programHashStr)
+	if err != nil {
+		fmt.Println("Decoding program hash string failed")
+		return Uint160{}, Uint256{}, err
+	}
+	var programHash Uint160
+	if err := programHash.Deserialize(bytes.NewReader(programHashHex)); err != nil {
+		fmt.Println("Deserialization program hash failed")
+		return Uint160{}, Uint256{}, err
+	}
+	assetHashHex, err := hex.DecodeString(assetHashStr)
+	if err != nil {
+		fmt.Println("Decoding asset hash string failed")
+		return Uint160{}, Uint256{}, err
+	}
+	var assetHash Uint256
+	if err := assetHash.Deserialize(bytes.NewReader(assetHashHex)); err != nil {
+		fmt.Println("Deserialization asset hash failed")
+		return Uint160{}, Uint256{}, err
+	}
+	return programHash, assetHash, nil
+}
+
