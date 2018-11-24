@@ -110,3 +110,48 @@ func (cs *FileStore) SaveStoredData(name string, value []byte) error {
 	return nil
 }
 
+func (cs *FileStore) LoadStoredData(name string) ([]byte, error) {
+	jsondata, err := cs.readDB()
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(jsondata, &cs.fd)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	if name == "IV" {
+		return hex.DecodeString(cs.fd.IV)
+	} else if name == "MasterKey" {
+		return hex.DecodeString(cs.fd.MasterKey)
+	} else if name == "PasswordHash" {
+		return hex.DecodeString(cs.fd.PasswordHash)
+	}
+
+	return nil, NewDetailErr(errors.New("Can't find the key: "+name), ErrNoCode, "")
+}
+
+func (cs *FileStore) SaveAccountData(pubkeyhash []byte, prikeyenc []byte) error {
+	jsondata, err := cs.readDB()
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(jsondata, &cs.fd)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	cs.fd.PublicKeyHash = fmt.Sprintf("%x", pubkeyhash)
+	cs.fd.PrivateKeyEncrypted = fmt.Sprintf("%x", prikeyenc)
+
+	jsonblob, err := json.Marshal(cs.fd)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	cs.writeDB(jsonblob)
+	return nil
+}
+
