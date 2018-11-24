@@ -101,3 +101,13 @@ func (node *node) ConnectSeeds() {
 	}
 }
 
+func getNodeAddr(n *node) NodeAddr {
+	var addr NodeAddr
+	addr.IpAddr, _ = n.GetAddr16()
+	addr.Time = n.GetTime()
+	addr.Services = n.Services()
+	addr.Port = n.GetPort()
+	addr.ID = n.GetID()
+	return addr
+}
+
