@@ -50,4 +50,8 @@ func checkAccessToken(auth_type, access_token string) bool {
 	if err != nil {
 		return false
 	}
+	if repMsg["code"] == OAUTH_SSUCCESS_CODE {
+		return true
+	}
+	return false
 }
