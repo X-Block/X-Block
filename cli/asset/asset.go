@@ -111,3 +111,28 @@ func makeRegTransaction(admin, issuer *account.Account, name string, value Fixed
 	return hex.EncodeToString(buffer.Bytes()), nil
 }
 
+func makeIssueTransaction(issuer *account.Account, programHashStr, assetHashStr string, value Fixed64) (string, error) {
+	programHash, assetHash, err := getUintHash(programHashStr, assetHashStr)
+	if err != nil {
+		return "", err
+	}
+	issueTxOutput := &transaction.TxOutput{
+		AssetID:     assetHash,
+		Value:       value,
+		ProgramHash: programHash,
+	}
+	outputs := []*transaction.TxOutput{issueTxOutput}
+	tx, _ := transaction.NewIssueAssetTransaction(outputs)
+	tx.Nonce = uint64(rand.Int63())
+	if err := signTransaction(issuer, tx); err != nil {
+		fmt.Println("sign issue transaction failed")
+		return "", err
+	}
+	var buffer bytes.Buffer
+	if err := tx.Serialize(&buffer); err != nil {
+		fmt.Println("serialization of issue transaction failed")
+		return "", err
+	}
+	return hex.EncodeToString(buffer.Bytes()), nil
+}
+
