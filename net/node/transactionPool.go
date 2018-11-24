@@ -35,3 +35,14 @@ func (txnPool *TXNPool) AppendTxnPool(txn *transaction.Transaction) bool {
 }
 
 
+func (txnPool *TXNPool) GetTxnPool(cleanPool bool) map[common.Uint256]*transaction.Transaction {
+	txnPool.Lock()
+	defer txnPool.Unlock()
+
+	list := txnPool.list
+	if cleanPool == true {
+		txnPool.init()
+	}
+	return DeepCopy(list)
+}
+
