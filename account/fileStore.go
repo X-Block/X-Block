@@ -71,3 +71,13 @@ func (cs *FileStore) closeDB() {
 	}
 }
 
+func (cs *FileStore) BuildDatabase(path string) {
+	err := os.Remove(path)
+	if err != nil {
+	}
+
+	jsonBlob := []byte("{\"PublicKeyHash\":\"\", \"PrivateKeyEncrypted\":\"\", \"Address\":\"\", \"ScriptHash\":\"\", \"RawData\":\"\", \"PasswordHash\":\"\", \"IV\":\"\", \"MasterKey\":\"\"}")
+
+	cs.writeDB(jsonBlob)
+}
+
