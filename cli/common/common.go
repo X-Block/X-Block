@@ -40,3 +40,9 @@ func Address() string {
 	return address
 }
 
+func PrintError(c *cli.Context, err error, cmd string) {
+	fmt.Println("Incorrect Usage:", err)
+	fmt.Println("")
+	cli.ShowCommandHelp(c, cmd)
+}
+
