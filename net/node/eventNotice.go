@@ -11,3 +11,9 @@ type eventQueue struct {
 	Disconnect *events.Event
 }
 
+func (eq *eventQueue) init() {
+	eq.Consensus = events.NewEvent()
+	eq.Block = events.NewEvent()
+	eq.Disconnect = events.NewEvent()
+}
+
