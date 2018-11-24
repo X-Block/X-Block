@@ -54,3 +54,6 @@ func NewAccountWithPrivatekey(privateKey []byte) (*Account, error) {
 	}, nil
 }
 
+func (ac *Account) PrivKey() []byte {
+	return ac.PrivateKey
+}
