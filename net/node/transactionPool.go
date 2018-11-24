@@ -70,3 +70,8 @@ func (txnPool *TXNPool) CleanTxnPool(txs []*transaction.Transaction) error {
 	return nil
 }
 
+func (txnPool *TXNPool) init() {
+	txnPool.list = make(map[common.Uint256]*transaction.Transaction)
+	txnPool.txnCnt = 0
+}
+
