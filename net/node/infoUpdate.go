@@ -111,3 +111,39 @@ func getNodeAddr(n *node) NodeAddr {
 	return addr
 }
 
+func (node *node) reconnect(peer *node) error {
+	isTls := config.Parameters.IsTLS
+	addr := getNodeAddr(peer)
+	var ip net.IP
+	ip = addr.IpAddr[:]
+	nodeAddr := ip.To16().String() + ":" + strconv.Itoa(int(addr.Port))
+	log.Info("try to reconnect peer, peer addr is ", nodeAddr)
+	var conn net.Conn
+	var err error
+	if isTls {
+		conn, err = TLSDial(nodeAddr)
+		if err != nil {
+			return nil
+		}
+	} else {
+		conn, err = NonTLSDial(nodeAddr)
+		if err != nil {
+			return nil
+		}
+	}
+	node.link.connCnt++
+
+	peer.conn = conn
+	peer.addr, err = parseIPaddr(conn.RemoteAddr().String())
+	peer.local = node
+
+	log.Info(fmt.Sprintf("Reconnect node %s connect with %s with %s",
+		conn.LocalAddr().String(), conn.RemoteAddr().String(),
+		conn.RemoteAddr().Network()))
+	go peer.rx()
+
+	peer.SetState(ESTABLISH)
+
+	return nil
+}
+
