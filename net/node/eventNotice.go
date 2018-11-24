@@ -17,3 +17,16 @@ func (eq *eventQueue) init() {
 	eq.Disconnect = events.NewEvent()
 }
 
+func (eq *eventQueue) GetEvent(eventName string) *events.Event {
+	switch eventName {
+	case "consensus":
+		return eq.Consensus
+	case "block":
+		return eq.Block
+	case "disconnect":
+		return eq.Disconnect
+	default:
+		fmt.Printf("Unknow event registe")
+		return nil
+	}
+}
