@@ -12,3 +12,8 @@ import (
 	"github.com/urfave/cli"
 )
 
+var (
+	Ip   string
+	Port string
+)
+
