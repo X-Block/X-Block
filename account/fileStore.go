@@ -49,3 +49,25 @@ func (cs *FileStore) readDB() ([]byte, error) {
 	}
 }
 
+func (cs *FileStore) writeDB(data []byte) error {
+	var err error
+	cs.file, err = os.OpenFile(cs.path, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return err
+	}
+	defer cs.closeDB()
+
+	if cs.file != nil {
+		cs.file.Write(data)
+	}
+
+	return nil
+}
+
+func (cs *FileStore) closeDB() {
+	if cs.file != nil {
+		cs.file.Close()
+		cs.file = nil
+	}
+}
+
