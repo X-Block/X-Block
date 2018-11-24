@@ -136,3 +136,153 @@ func makeIssueTransaction(issuer *account.Account, programHashStr, assetHashStr 
 	return hex.EncodeToString(buffer.Bytes()), nil
 }
 
+func makeTransferTransaction(signer *account.Account, programHashStr, assetHashStr string, value Fixed64) (string, error) {
+	programHash, assetHash, err := getUintHash(programHashStr, assetHashStr)
+	if err != nil {
+		return "", err
+	}
+	myProgramHashStr := ToHexString(signer.ProgramHash.ToArray())
+
+	resp, err := httpjsonrpc.Call(Address(), "getunspendoutput", 0, []interface{}{myProgramHashStr, assetHashStr})
+	if err != nil {
+		fmt.Println("HTTP JSON call failed")
+		return "", err
+	}
+	r := make(map[string]interface{})
+	err = json.Unmarshal(resp, &r)
+	if err != nil {
+		fmt.Println("Unmarshal JSON failed")
+		return "", err
+	}
+
+	inputs := []*transaction.UTXOTxInput{}
+	outputs := []*transaction.TxOutput{}
+	transferTxOutput := &transaction.TxOutput{
+		AssetID:     assetHash,
+		Value:       value,
+		ProgramHash: programHash,
+	}
+	outputs = append(outputs, transferTxOutput)
+
+	unspend := r["result"].(map[string]interface{})
+	expected := transferTxOutput.Value
+	for k, v := range unspend {
+		h := k[0:REFERTXHASHLEN]
+		i := k[REFERTXHASHLEN+1:]
+		b, _ := hex.DecodeString(h)
+		var referHash Uint256
+		referHash.Deserialize(bytes.NewReader(b))
+		referIndex, _ := strconv.Atoi(i)
+
+		out := v.(map[string]interface{})
+		value := Fixed64(out["Value"].(float64))
+		if value == expected {
+			transferUTXOInput := &transaction.UTXOTxInput{
+				ReferTxID:          referHash,
+				ReferTxOutputIndex: uint16(referIndex),
+			}
+			expected = 0
+			inputs = append(inputs, transferUTXOInput)
+			break
+		} else if value > expected {
+			transferUTXOInput := &transaction.UTXOTxInput{
+				ReferTxID:          referHash,
+				ReferTxOutputIndex: uint16(referIndex),
+			}
+			inputs = append(inputs, transferUTXOInput)
+			getChangeOutput := &transaction.TxOutput{
+				AssetID:     assetHash,
+				Value:       value - expected,
+				ProgramHash: signer.ProgramHash,
+			}
+			expected = 0
+			outputs = append(outputs, getChangeOutput)
+			break
+		} else if value < expected {
+			transferUTXOInput := &transaction.UTXOTxInput{
+				ReferTxID:          referHash,
+				ReferTxOutputIndex: uint16(referIndex),
+			}
+			expected -= value
+			inputs = append(inputs, transferUTXOInput)
+			if expected == 0 {
+				break
+			}
+		}
+	}
+	if expected != 0 {
+		return "", errors.New("transfer failed, ammount is not enough")
+	}
+	tx, _ := transaction.NewTransferAssetTransaction(inputs, outputs)
+	tx.Nonce = uint64(rand.Int63())
+	if err := signTransaction(signer, tx); err != nil {
+		fmt.Println("sign transfer transaction failed")
+		return "", err
+	}
+	var buffer bytes.Buffer
+	if err := tx.Serialize(&buffer); err != nil {
+		fmt.Println("serialization of transfer transaction failed")
+		return "", err
+	}
+	return hex.EncodeToString(buffer.Bytes()), nil
+}
+
+func assetAction(c *cli.Context) error {
+	if c.NumFlags() == 0 {
+		cli.ShowSubcommandHelp(c)
+		return nil
+	}
+	reg := c.Bool("reg")
+	issue := c.Bool("issue")
+	transfer := c.Bool("transfer")
+	if !reg && !issue && !transfer {
+		cli.ShowSubcommandHelp(c)
+		return nil
+	}
+
+	wallet := openWallet(c.String("wallet"), []byte(c.String("password")))
+	admin, _ := wallet.GetDefaultAccount()
+	value := c.Int64("value")
+	if value == 0 {
+		fmt.Println("invalid value [--value]")
+		return nil
+	}
+
+	var txHex string
+	var err error
+	if reg {
+		name := c.String("name")
+		if name == "" {
+			rbuf := make([]byte, RANDBYTELEN)
+			rand.Read(rbuf)
+			name = "XBlock-" + ToHexString(rbuf)
+		}
+		issuer := admin
+		txHex, err = makeRegTransaction(admin, issuer, name, Fixed64(value))
+	} else {
+		asset := c.String("asset")
+		to := c.String("to")
+		if asset == "" || to == "" {
+			fmt.Println("missing flag [--asset] or [--to]")
+			return nil
+		}
+		if issue {
+			txHex, err = makeIssueTransaction(admin, to, asset, Fixed64(value))
+		} else if transfer {
+			txHex, err = makeTransferTransaction(admin, to, asset, Fixed64(value))
+		}
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+	}
+	resp, err := httpjsonrpc.Call(Address(), "sendrawtransaction", 0, []interface{}{txHex})
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return err
+	}
+	FormatOutput(resp)
+
+	return nil
+}
+
