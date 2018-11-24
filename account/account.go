@@ -57,3 +57,7 @@ func NewAccountWithPrivatekey(privateKey []byte) (*Account, error) {
 func (ac *Account) PrivKey() []byte {
 	return ac.PrivateKey
 }
+
+func (ac *Account) PubKey() *crypto.PubKey {
+	return ac.PublicKey
+}
