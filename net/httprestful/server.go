@@ -39,3 +39,15 @@ func SendBlock2NoticeServer(v interface{}) {
 	}()
 }
 
+func checkAccessToken(auth_type, access_token string) bool {
+	if len(Parameters.OauthServerAddr) == 0 {
+		return true
+	}
+	req := make(map[string]interface{})
+	req["token"] = access_token
+	req["auth_type"] = auth_type
+	repMsg, err := common.PostRequest(req, Parameters.OauthServerAddr)
+	if err != nil {
+		return false
+	}
+}
