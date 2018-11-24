@@ -90,3 +90,24 @@ func signTransaction(signer *account.Account, tx *transaction.Transaction) error
 	return nil
 }
 
+func makeRegTransaction(admin, issuer *account.Account, name string, value Fixed64) (string, error) {
+	asset := &Asset{name, byte(0x00), AssetType(Share), UTXO}
+	transactionContract, err := contract.CreateSignatureContract(admin.PubKey())
+	if err != nil {
+		fmt.Println("CreateSignatureContract failed")
+		return "", err
+	}
+	tx, _ := transaction.NewRegisterAssetTransaction(asset, value, issuer.PubKey(), transactionContract.ProgramHash)
+	tx.Nonce = uint64(rand.Int63())
+	if err := signTransaction(issuer, tx); err != nil {
+		fmt.Println("sign regist transaction failed")
+		return "", err
+	}
+	var buffer bytes.Buffer
+	if err := tx.Serialize(&buffer); err != nil {
+		fmt.Println("serialize registtransaction failed")
+		return "", err
+	}
+	return hex.EncodeToString(buffer.Bytes()), nil
+}
+
