@@ -147,3 +147,13 @@ func (node *node) reconnect(peer *node) error {
 	return nil
 }
 
+func (node *node) TryConnect() {
+	for _, n := range node.nbrNodes.List {
+		if n.GetState() == INACTIVITY && n.tryTimes < 3 {
+			node.reconnect(n)
+			n.tryTimes++
+		}
+	}
+
+}
+
