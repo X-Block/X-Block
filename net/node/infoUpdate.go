@@ -87,3 +87,17 @@ func (node *node) HeartBeatMonitor() {
 	}
 }
 
+func (node *node) ReqNeighborList() {
+	buf, _ := NewMsg("getaddr", node.local)
+	go node.Tx(buf)
+}
+
+func (node *node) ConnectSeeds() {
+	if node.nbrNodes.GetConnectionCnt() == 0 {
+		seedNodes := config.Parameters.SeedList
+		for _, nodeAddr := range seedNodes {
+			go node.Connect(nodeAddr)
+		}
+	}
+}
+
