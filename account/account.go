@@ -8,3 +8,9 @@ import (
 	"errors"
 )
 
+type Account struct {
+	PrivateKey  []byte
+	PublicKey   *crypto.PubKey
+	ProgramHash Uint160
+}
+
