@@ -75,3 +75,14 @@ func (txnPool *TXNPool) init() {
 	txnPool.txnCnt = 0
 }
 
+func (node *node) SynchronizeTxnPool() {
+	node.nbrNodes.RLock()
+	defer node.nbrNodes.RUnlock()
+
+	for _, n := range node.nbrNodes.List {
+		if n.state == ESTABLISH {
+			msg.ReqTxnPool(n)
+		}
+	}
+}
+
