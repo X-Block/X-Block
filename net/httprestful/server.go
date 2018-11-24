@@ -10,3 +10,15 @@ import (
 	"strconv"
 )
 
+const OAUTH_SSUCCESS_CODE = "r0000"
+
+func StartServer(n Noder) {
+	common.SetNode(n)
+	ledger.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, SendBlock2NoticeServer)
+	func() common.ApiServer {
+		rest := InitRestServer(checkAccessToken)
+		go rest.Start()
+		return rest
+	}()
+}
+
