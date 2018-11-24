@@ -25,3 +25,13 @@ func (txnPool *TXNPool) GetTransaction(hash common.Uint256) *transaction.Transac
 	return txn
 }
 
+func (txnPool *TXNPool) AppendTxnPool(txn *transaction.Transaction) bool {
+	hash := txn.Hash()
+	txnPool.Lock()
+	txnPool.list[hash] = txn
+	txnPool.txnCnt++
+	txnPool.Unlock()
+	return true
+}
+
+
