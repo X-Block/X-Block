@@ -22,3 +22,20 @@ func StartServer(n Noder) {
 	}()
 }
 
+func SendBlock2NoticeServer(v interface{}) {
+
+	if len(Parameters.NoticeServerAddr) == 0 || !common.CheckPushBlock() {
+		return
+	}
+	go func() {
+		req := make(map[string]interface{})
+		req["Height"] = strconv.FormatInt(int64(ledger.DefaultLedger.Blockchain.BlockHeight), 10)
+		req = common.GetBlockByHeight(req)
+
+		repMsg, _ := common.PostRequest(req, Parameters.NoticeServerAddr)
+		if repMsg[""] == nil {
+	
+		}
+	}()
+}
+
