@@ -21,3 +21,16 @@ import (
 	"github.com/urfave/cli"
 )
 
+const (
+	RANDBYTELEN    = 4
+	REFERTXHASHLEN = 64
+)
+
+func newContractContextWithoutProgramHashes(data signature.SignableData) *contract.ContractContext {
+	return &contract.ContractContext{
+		Data:       data,
+		Codes:      make([][]byte, 1),
+		Parameters: make([][][]byte, 1),
+	}
+}
+
