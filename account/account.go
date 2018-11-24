@@ -14,3 +14,20 @@ type Account struct {
 	ProgramHash Uint160
 }
 
+func NewAccount() (*Account, error) {
+	priKey, pubKey, _ := crypto.GenKeyPair()
+	signatureRedeemScript, err := contract.CreateSignatureRedeemScript(&pubKey)
+	if err != nil {
+		return nil, NewDetailErr(err, ErrNoCode, "CreateSignatureRedeemScript failed")
+	}
+	programHash, err := ToCodeHash(signatureRedeemScript)
+	if err != nil {
+		return nil, NewDetailErr(err, ErrNoCode, "ToCodeHash failed")
+	}
+	return &Account{
+		PrivateKey:  priKey,
+		PublicKey:   &pubKey,
+		ProgramHash: programHash,
+	}, nil
+}
+
