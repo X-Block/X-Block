@@ -31,3 +31,26 @@ func NewAccount() (*Account, error) {
 	}, nil
 }
 
+func NewAccountWithPrivatekey(privateKey []byte) (*Account, error) {
+	privKeyLen := len(privateKey)
+
+	if privKeyLen != 32 && privKeyLen != 96 && privKeyLen != 104 {
+		return nil, errors.New("Invalid private Key.")
+	}
+
+	pubKey := crypto.NewPubKey(privateKey)
+	signatureRedeemScript, err := contract.CreateSignatureRedeemScript(pubKey)
+	if err != nil {
+		return nil, NewDetailErr(err, ErrNoCode, "CreateSignatureRedeemScript failed")
+	}
+	programHash, err := ToCodeHash(signatureRedeemScript)
+	if err != nil {
+		return nil, NewDetailErr(err, ErrNoCode, "ToCodeHash failed")
+	}
+	return &Account{
+		PrivateKey:  privateKey,
+		PublicKey:   pubKey,
+		ProgramHash: programHash,
+	}, nil
+}
+
