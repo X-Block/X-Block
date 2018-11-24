@@ -86,3 +86,14 @@ func (node *node) SynchronizeTxnPool() {
 	}
 }
 
+func (txnPool *TXNPool) CleanSubmittedTransactions(block *ledger.Block) error {
+	txnPool.Lock()
+	defer txnPool.Unlock()
+	log.Debug()
+
+	err := txnPool.CleanTxnPool(block.Transactions)
+	if err != nil {
+		return errors.NewDetailErr(err, errors.ErrNoCode, "[TxnPool], CleanSubmittedTransactions failed.")
+	}
+	return nil
+}
