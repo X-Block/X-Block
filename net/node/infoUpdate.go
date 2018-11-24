@@ -12,3 +12,7 @@ import (
 	"time"
 )
 
+func keepAlive(from *Noder, dst *Noder) {
+
+}
+
