@@ -81,3 +81,32 @@ func (cs *FileStore) BuildDatabase(path string) {
 	cs.writeDB(jsonBlob)
 }
 
+func (cs *FileStore) SaveStoredData(name string, value []byte) error {
+	jsondata, err := cs.readDB()
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(jsondata, &cs.fd)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	if name == "IV" {
+		cs.fd.IV = fmt.Sprintf("%x", value)
+	} else if name == "MasterKey" {
+		cs.fd.MasterKey = fmt.Sprintf("%x", value)
+	} else if name == "PasswordHash" {
+		cs.fd.PasswordHash = fmt.Sprintf("%x", value)
+	}
+
+	jsonblob, err := json.Marshal(cs.fd)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	cs.writeDB(jsonblob)
+
+	return nil
+}
+
