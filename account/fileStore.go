@@ -172,3 +172,21 @@ func (cs *FileStore) LoadAccountData(index int) ([]byte, []byte, error) {
 	return publickeyHash, privatekeyEncrypted, err
 }
 
+func (cs *FileStore) LoadContractData(index int) ([]byte, []byte, []byte, error) {
+	jsondata, err := cs.readDB()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	err = json.Unmarshal(jsondata, &cs.fd)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	scriptHash, err := hex.DecodeString(cs.fd.ScriptHash)
+	publickeyHash, err := hex.DecodeString(cs.fd.PublicKeyHash)
+	rawData, err := hex.DecodeString(cs.fd.RawData)
+
+	return scriptHash, publickeyHash, rawData, err
+}
+
