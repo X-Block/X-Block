@@ -11,3 +11,10 @@ import (
 	"fmt"
 	"sync"
 )
+
+type TXNPool struct {
+	sync.RWMutex
+	txnCnt uint64
+	list   map[common.Uint256]*transaction.Transaction
+}
+
