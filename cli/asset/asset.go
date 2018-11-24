@@ -286,3 +286,56 @@ func assetAction(c *cli.Context) error {
 	return nil
 }
 
+func NewCommand() *cli.Command {
+	return &cli.Command{
+		Name:        "asset",
+		Usage:       "asset registration, issuance and transfer",
+		Description: "With nodectl asset, you could control assert through transaction.",
+		ArgsUsage:   "[args]",
+		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:  "reg, r",
+				Usage: "regist a new kind of asset",
+			},
+			cli.BoolFlag{
+				Name:  "issue, i",
+				Usage: "issue asset that has been registered",
+			},
+			cli.BoolFlag{
+				Name:  "transfer, t",
+				Usage: "transfer asset",
+			},
+			cli.StringFlag{
+				Name:  "wallet, w",
+				Usage: "wallet name",
+				Value: account.WalletFileName,
+			},
+			cli.StringFlag{
+				Name:  "password, p",
+				Usage: "wallet password",
+				Value: account.DefaultPin,
+			},
+			cli.StringFlag{
+				Name:  "asset, a",
+				Usage: "uniq id for asset",
+			},
+			cli.StringFlag{
+				Name:  "name",
+				Usage: "asset name",
+			},
+			cli.StringFlag{
+				Name:  "to",
+				Usage: "asset to whom",
+			},
+			cli.Int64Flag{
+				Name:  "value, v",
+				Usage: "asset ammount",
+			},
+		},
+		Action: assetAction,
+		OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
+			PrintError(c, err, "asset")
+			return cli.NewExitError("", 1)
+		},
+	}
+}
