@@ -55,3 +55,18 @@ func DeepCopy(mapIn map[common.Uint256]*transaction.Transaction) map[common.Uint
 }
 
 
+func (txnPool *TXNPool) CleanTxnPool(txs []*transaction.Transaction) error {
+	txsNum := len(txs)
+	txInPoolNum := len(txnPool.list)
+	cleaned := 0
+	for _, tx := range txs[1:] {
+		delete(txnPool.list, tx.Hash())
+		cleaned++
+	}
+	if txsNum-cleaned != 1 {
+		log.Info(fmt.Sprintf("The Transactions num Unmatched. Expect %d, got %d .\n", txsNum, cleaned))
+	}
+	log.Debug(fmt.Sprintf("[CleanTxnPool], Requested %d clean, %d transactions cleaned from localNode.TransPool and remains %d still in TxPool", txsNum, cleaned, txInPoolNum-cleaned))
+	return nil
+}
+
