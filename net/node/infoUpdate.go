@@ -74,3 +74,16 @@ func (node *node) SendPingToNbr() {
 	}
 }
 
+func (node *node) HeartBeatMonitor() {
+	noders := node.local.GetNeighborNoder()
+	for _, n := range noders {
+		if n.GetState() == ESTABLISH {
+			t := n.GetLastRXTime()
+			if time.Since(t).Seconds() > (PERIODUPDATETIME * KEEPALIVETIMEOUT) {
+				log.Warn("keepalive timeout!!!")
+				n.SetState(INACTIVITY)
+			}
+		}
+	}
+}
+
