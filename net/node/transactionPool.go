@@ -18,3 +18,10 @@ type TXNPool struct {
 	list   map[common.Uint256]*transaction.Transaction
 }
 
+func (txnPool *TXNPool) GetTransaction(hash common.Uint256) *transaction.Transaction {
+	txnPool.RLock()
+	defer txnPool.RUnlock()
+	txn := txnPool.list[hash]
+	return txn
+}
+
