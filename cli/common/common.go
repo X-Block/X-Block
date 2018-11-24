@@ -35,3 +35,8 @@ func NewPortFlag() cli.Flag {
 	}
 }
 
+func Address() string {
+	address := "http://" + Ip + ":" + Port
+	return address
+}
+
