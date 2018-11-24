@@ -155,3 +155,20 @@ func (cs *FileStore) SaveAccountData(pubkeyhash []byte, prikeyenc []byte) error 
 	return nil
 }
 
+func (cs *FileStore) LoadAccountData(index int) ([]byte, []byte, error) {
+	jsondata, err := cs.readDB()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = json.Unmarshal(jsondata, &cs.fd)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	publickeyHash, err := hex.DecodeString(cs.fd.PublicKeyHash)
+	privatekeyEncrypted, err := hex.DecodeString(cs.fd.PrivateKeyEncrypted)
+
+	return publickeyHash, privatekeyEncrypted, err
+}
+
