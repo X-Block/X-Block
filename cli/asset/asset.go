@@ -34,3 +34,15 @@ func newContractContextWithoutProgramHashes(data signature.SignableData) *contra
 	}
 }
 
+func openWallet(name string, passwd []byte) account.Client {
+	if name == account.WalletFileName {
+		fmt.Println("Using default wallet: ", account.WalletFileName)
+	}
+	wallet := account.Open(name, passwd)
+	if wallet == nil {
+		fmt.Println("Failed to open wallet: ", name)
+		os.Exit(1)
+	}
+	return wallet
+}
+
