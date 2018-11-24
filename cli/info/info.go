@@ -115,3 +115,52 @@ func infoAction(c *cli.Context) (err error) {
 	return nil
 }
 
+func NewCommand() *cli.Command {
+	return &cli.Command{
+		Name:        "info",
+		Usage:       "show blockchain information",
+		Description: "With nodectl info, you could look up blocks, transactions, etc.",
+		ArgsUsage:   "[args]",
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "blockhash, b",
+				Usage: "hash for querying a block",
+			},
+			cli.StringFlag{
+				Name:  "txhash, t",
+				Usage: "hash for querying a transaction",
+			},
+			cli.BoolFlag{
+				Name:  "bestblockhash",
+				Usage: "latest block hash",
+			},
+			cli.IntFlag{
+				Name:  "height",
+				Usage: "block height for querying a block",
+				Value: -1,
+			},
+			cli.BoolFlag{
+				Name:  "blockcount, c",
+				Usage: "block number in blockchain",
+			},
+			cli.BoolFlag{
+				Name:  "connections",
+				Usage: "connection count",
+			},
+			cli.BoolFlag{
+				Name:  "neighbor",
+				Usage: "neighbor information of current node",
+			},
+			cli.BoolFlag{
+				Name:  "state, s",
+				Usage: "current node state",
+			},
+			cli.BoolFlag{
+				Name:  "nodeversion, v",
+				Usage: "version of connected remote node",
+			},
+		},
+		Action: infoAction,
+		
+	}
+}
