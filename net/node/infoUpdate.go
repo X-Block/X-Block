@@ -57,3 +57,20 @@ func (node *node) SyncBlk() {
 	}
 }
 
+func (node *node) SendPingToNbr() {
+	noders := node.local.GetNeighborNoder()
+	for _, n := range noders {
+		t := n.GetLastRXTime()
+		if time.Since(t).Seconds() > PERIODUPDATETIME {
+			if n.GetState() == ESTABLISH {
+				buf, err := NewPingMsg()
+				if err != nil {
+					log.Error("failed build a new ping message")
+				} else {
+					go n.Tx(buf)
+				}
+			}
+		}
+	}
+}
+
