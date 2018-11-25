@@ -69,3 +69,7 @@ func (a *RegisterAsset) Data() []byte {
 type TransferAsset struct {
 }
 
+func (a *TransferAsset) Data() []byte {
+	return []byte{0}
+}
+
