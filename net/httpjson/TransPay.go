@@ -89,3 +89,7 @@ type PrivacyPayload struct {
 	EncryptAttr string
 }
 
+func (a *PrivacyPayload) Data() []byte {
+	return []byte{0}
+}
+
