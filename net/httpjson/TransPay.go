@@ -54,3 +54,10 @@ type Issuer struct {
 }
 
 
+type RegisterAsset struct {
+	Asset      *asset.Asset
+	Amount     Fixed64
+	Issuer     Issuer
+	Controller string
+}
+
