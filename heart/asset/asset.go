@@ -19,3 +19,11 @@ const (
 
 type AssetRecordType byte
 
+type Asset struct {
+	Name       string
+	Precision  byte
+	AssetType  AssetType
+	RecordType AssetRecordType
+}
+
+
