@@ -110,6 +110,14 @@ func TransPay(p Payload) Payload {
 		obj.Email = object.Email
 		obj.Description = object.Description
 		return obj
+	case *payload.RegisterAsset:
+		obj := new(RegisterAsset)
+		obj.Asset = object.Asset
+		obj.Amount = object.Amount
+		obj.Issuer.X = object.Issuer.X.String()
+		obj.Issuer.Y = object.Issuer.Y.String()
+		obj.Controller = ToHexString(object.Controller.ToArray())
+		return obj
 	
 
 	}
