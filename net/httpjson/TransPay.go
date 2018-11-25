@@ -61,3 +61,8 @@ type RegisterAsset struct {
 	Controller string
 }
 
+func (a *RegisterAsset) Data() []byte {
+	return []byte{0}
+}
+
+
