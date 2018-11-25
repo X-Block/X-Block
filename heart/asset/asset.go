@@ -48,3 +48,30 @@ func (a *Asset) Serialize(w io.Writer) error {
 }
 
 
+func (a *Asset) Deserialize(r io.Reader) error {
+	vars, err := serialization.ReadVarString(r)
+	if err != nil {
+		return NewDetailErr(errors.New("[Asset], Name deserialize failed."), ErrNoCode, "")
+	}
+	a.Name = vars
+	p := make([]byte, 1)
+	n, err := r.Read(p)
+	if n > 0 {
+		a.Precision = p[0]
+	} else {
+		return NewDetailErr(errors.New("[Asset], Precision deserialize failed."), ErrNoCode, "")
+	}
+	n, err = r.Read(p)
+	if n > 0 {
+		a.AssetType = AssetType(p[0])
+	} else {
+		return NewDetailErr(errors.New("[Asset], AssetType deserialize failed."), ErrNoCode, "")
+	}
+	n, err = r.Read(p)
+	if n > 0 {
+		a.RecordType = AssetRecordType(p[0])
+	} else {
+		return NewDetailErr(errors.New("[Asset], RecordType deserialize failed."), ErrNoCode, "")
+	}
+	return nil
+}
