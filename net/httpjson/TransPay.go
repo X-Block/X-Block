@@ -78,3 +78,7 @@ type Record struct {
 	RecordData string
 }
 
+func (a *Record) Data() []byte {
+	return []byte{0}
+}
+
