@@ -49,3 +49,8 @@ func (a *IssueAsset) Data() []byte {
 	return []byte{0}
 }
 
+type Issuer struct {
+	X, Y string
+}
+
+
