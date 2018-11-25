@@ -28,3 +28,12 @@ type FunctionCode struct {
 	ReturnTypes    string
 }
 
+type DeployCode struct {
+	Code        *FunctionCode
+	Name        string
+	CodeVersion string
+	Author      string
+	Email       string
+	Description string
+}
+
