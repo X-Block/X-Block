@@ -118,6 +118,11 @@ func TransPay(p Payload) Payload {
 		obj.Issuer.Y = object.Issuer.Y.String()
 		obj.Controller = ToHexString(object.Controller.ToArray())
 		return obj
+	case *payload.Record:
+		obj := new(Record)
+		obj.RecordType = object.RecordType
+		obj.RecordData = ToHexString(object.RecordData)
+		return obj
 	
 
 	}
