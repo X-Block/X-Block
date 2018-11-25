@@ -9,3 +9,8 @@ import (
 	"bytes"
 )
 
+type Payload interface {
+	Data() []byte
+}
+
+
