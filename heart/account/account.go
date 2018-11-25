@@ -53,5 +53,10 @@ func(accountState *AccountState)Deserialize(r io.Reader) error {
 	return nil
 }
 
+func(accountState *AccountState) ToArray() []byte {
+	b := new(bytes.Buffer)
+	accountState.Serialize(b)
+	return b.Bytes()
+}
 
 
