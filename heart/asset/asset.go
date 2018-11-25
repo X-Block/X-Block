@@ -27,3 +27,24 @@ type Asset struct {
 }
 
 
+func (a *Asset) Serialize(w io.Writer) error {
+	err := serialization.WriteVarString(w, a.Name)
+	if err != nil {
+		return NewDetailErr(err, ErrNoCode, "[Asset], Name serialize failed.")
+	}
+	_, err = w.Write([]byte{byte(a.Precision)})
+	if err != nil {
+		return NewDetailErr(err, ErrNoCode, "[Asset], Precision serialize failed.")
+	}
+	_, err = w.Write([]byte{byte(a.AssetType)})
+	if err != nil {
+		return NewDetailErr(err, ErrNoCode, "[Asset], AssetType serialize failed.")
+	}
+	_, err = w.Write([]byte{byte(a.RecordType)})
+	if err != nil {
+		return NewDetailErr(err, ErrNoCode, "[Asset], RecordType serialize failed.")
+	}
+	return nil
+}
+
+
