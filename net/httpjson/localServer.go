@@ -20,3 +20,8 @@ func StartLocalServer() {
 	HandleFunc("setdebuginfo", setDebugInfo)
 
 	
+	err := http.ListenAndServe(":"+strconv.Itoa(Parameters.HttpLocalPort), nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err.Error())
+	}
+}
