@@ -66,3 +66,6 @@ func (a *RegisterAsset) Data() []byte {
 }
 
 
+type TransferAsset struct {
+}
+
