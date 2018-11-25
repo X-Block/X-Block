@@ -123,7 +123,15 @@ func TransPay(p Payload) Payload {
 		obj.RecordType = object.RecordType
 		obj.RecordData = ToHexString(object.RecordData)
 		return obj
-	
+	case *payload.PrivacyPayload:
+		obj := new(PrivacyPayload)
+		obj.PayloadType = uint8(object.PayloadType)
+		obj.Payload = ToHexString(object.Payload)
+		obj.EncryptType = uint8(object.EncryptType)
+		bytesBuffer := bytes.NewBuffer([]byte{})
+		object.EncryptAttr.Serialize(bytesBuffer)
+		obj.EncryptAttr = ToHexString(bytesBuffer.Bytes())
+		return obj
 
 	}
 	return nil
