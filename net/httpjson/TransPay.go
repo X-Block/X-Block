@@ -17,3 +17,8 @@ type Payload interface {
 type BookKeeping struct {
 }
 
+func (dc *BookKeeping) Data() []byte {
+	return []byte{0}
+}
+
+
