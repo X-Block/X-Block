@@ -73,3 +73,8 @@ func (a *TransferAsset) Data() []byte {
 	return []byte{0}
 }
 
+type Record struct {
+	RecordType string
+	RecordData string
+}
+
