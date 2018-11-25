@@ -93,3 +93,25 @@ func (a *PrivacyPayload) Data() []byte {
 	return []byte{0}
 }
 
+func TransPay(p Payload) Payload {
+	switch object := p.(type) {
+	case *payload.BookKeeping:
+	case *payload.BookKeeper:
+	case *payload.IssueAsset:
+	case *payload.TransferAsset:
+	case *payload.DeployCode:
+		obj := new(DeployCode)
+		obj.Code.Code = ToHexString(object.Code.Code)
+		obj.Code.ParameterTypes = ToHexString(ContractParameterTypeToByte(object.Code.ParameterTypes))
+		obj.Code.ReturnTypes = ToHexString(ContractParameterTypeToByte(object.Code.ReturnTypes))
+		obj.Name = object.Name
+		obj.CodeVersion = object.CodeVersion
+		obj.Author = object.Author
+		obj.Email = object.Email
+		obj.Description = object.Description
+		return obj
+	
+
+	}
+	return nil
+}
