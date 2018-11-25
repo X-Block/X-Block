@@ -37,3 +37,8 @@ type DeployCode struct {
 	Description string
 }
 
+func (dc *DeployCode) Data() []byte {
+	return []byte{0}
+}
+
+
