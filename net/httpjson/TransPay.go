@@ -45,3 +45,7 @@ func (dc *DeployCode) Data() []byte {
 type IssueAsset struct {
 }
 
+func (a *IssueAsset) Data() []byte {
+	return []byte{0}
+}
+
