@@ -32,3 +32,26 @@ func(accountState *AccountState)Serialize(w io.Writer) error {
 	return nil
 }
 
+func(accountState *AccountState)Deserialize(r io.Reader) error {
+	accountState.ProgramHash.Deserialize(r)
+	isFrozen, err := serialization.ReadBool(r)
+	if err != nil { return err }
+	accountState.IsFrozen = isFrozen
+	l, err := serialization.ReadUint64(r)
+	if err != nil { return err }
+	balances := make(map[common.Uint256]common.Fixed64, 0)
+	u := new(common.Uint256)
+	f := new(common.Fixed64)
+	for i:=0; i<int(l); i++ {
+		err = u.Deserialize(r)
+		if err != nil { return err }
+		err = f.Deserialize(r)
+		if err != nil { return err }
+		balances[*u] = *f
+	}
+	accountState.Balances = balances
+	return nil
+}
+
+
+
