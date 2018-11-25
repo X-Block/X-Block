@@ -82,3 +82,10 @@ func (a *Record) Data() []byte {
 	return []byte{0}
 }
 
+type PrivacyPayload struct {
+	PayloadType uint8
+	Payload     string
+	EncryptType uint8
+	EncryptAttr string
+}
+
