@@ -22,3 +22,9 @@ func (dc *BookKeeping) Data() []byte {
 }
 
 
+type FunctionCode struct {
+	Code           string
+	ParameterTypes string
+	ReturnTypes    string
+}
+
