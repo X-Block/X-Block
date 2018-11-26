@@ -967,3 +967,43 @@ func (bd *ChainStore) persistBlocks(ledger *Ledger) {
 
 }
 
+func (bd *ChainStore) SaveBlock(b *Block, ledger *Ledger) error {
+	log.Debug("SaveBlock()")
+
+	bd.mu.Lock()
+	defer bd.mu.Unlock()
+
+	if bd.blockCache[b.Hash()] == nil {
+		bd.blockCache[b.Hash()] = b
+	}
+
+	if b.Blockdata.Height >= (uint32(len(bd.headerIndex)) + 1) {
+headerIndex.count:%d",b.Blockdata.Height, uint32(len(bd.headerIndex)) )),ErrDuplicatedBlock,"")
+		return errors.New(fmt.Sprintf("WARNING: [SaveBlock] block height - headerIndex.count >= 1, block height:%d, headerIndex.count:%d", b.Blockdata.Height, uint32(len(bd.headerIndex))))
+	}
+
+	if b.Blockdata.Height == uint32(len(bd.headerIndex)) {
+
+		err := validation.VerifyBlock(b, ledger, false)
+		if err != nil {
+			log.Debug("VerifyBlock() error!")
+			return err
+		}
+
+		bd.st.NewBatch()
+		h := new(Header)
+		h.Blockdata = b.Blockdata
+		bd.addHeader(h)
+		err = bd.st.BatchCommit()
+		if err != nil {
+			return err
+		}
+	}
+
+	if b.Blockdata.Height < uint32(len(bd.headerIndex)) {
+		go bd.persistBlocks(ledger)
+	}
+
+	return nil
+}
+
