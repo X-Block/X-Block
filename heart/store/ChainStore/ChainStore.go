@@ -252,3 +252,38 @@ func (bd *ChainStore) IsDoubleSpend(tx *tx.Transaction) bool {
 	return false
 }
 
+func (bd *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
+
+	if height >= 0 {
+		queryKey := bytes.NewBuffer(nil)
+		queryKey.WriteByte(byte(DATA_BlockHash))
+		err := serialization.WriteUint32(queryKey, height)
+
+		if err == nil {
+			blockHash, err_get := bd.st.Get(queryKey.Bytes())
+			if err_get != nil {
+				return Uint256{}, err_get
+			} else {
+				blockHash256, err_parse := Uint256ParseFromBytes(blockHash)
+				if err_parse == nil {
+					return blockHash256, nil
+				} else {
+					return Uint256{}, err_parse
+				}
+
+			}
+		} else {
+			return Uint256{}, err
+		}
+	} else {
+		return Uint256{}, NewDetailErr(errors.New("[LevelDB]: GetBlockHash error param height < 0."), ErrNoCode, "")
+	}
+}
+
+func (bd *ChainStore) GetCurrentBlockHash() Uint256 {
+	bd.mu.RLock()
+	defer bd.mu.RUnlock()
+
+	return bd.headerIndex[bd.currentBlockHeight]
+}
+
