@@ -350,3 +350,42 @@ func (bd *ChainStore) VerifyHeader(header *Header) bool {
 	return true
 }
 
+func (bd *ChainStore) AddHeaders(headers []Header, ledger *Ledger) error {
+	bd.mu.Lock()
+	defer bd.mu.Unlock()
+
+	for i := 0; i < len(headers); i++ {
+		if headers[i].Blockdata.Height >= (uint32(len(bd.headerIndex)) + 1) {
+			break
+		}
+
+		if headers[i].Blockdata.Height < uint32(len(bd.headerIndex)) {
+			continue
+		}
+
+
+		if !bd.VerifyHeader(&headers[i]) {
+			log.Error("Verify header failed")
+			break
+		}
+
+		bd.st.NewBatch()
+
+		bd.addHeader(&headers[i])
+
+		err := bd.st.BatchCommit()
+		if err != nil {
+			return err
+		}
+
+
+		bd.headerCache[headers[i].Blockdata.Hash()] = &headers[i]
+	}
+
+	for k, _ := range bd.headerCache {
+		delete(bd.headerCache, k)
+	}
+
+	return nil
+}
+
