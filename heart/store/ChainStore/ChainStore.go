@@ -474,3 +474,48 @@ func (bd *ChainStore) GetTransaction(hash Uint256) (*tx.Transaction, error) {
 	return t, nil
 }
 
+func (bd *ChainStore) getTx(tx *tx.Transaction, hash Uint256) error {
+	prefix := []byte{byte(DATA_Transaction)}
+	tHash, err_get := bd.st.Get(append(prefix, hash.ToArray()...))
+	if err_get != nil {
+
+		return err_get
+	}
+
+	r := bytes.NewReader(tHash)
+
+
+	_, err := serialization.ReadUint32(r)
+	if err != nil {
+		return err
+	}
+
+
+	err = tx.Deserialize(r)
+
+	return err
+}
+
+func (bd *ChainStore) SaveTransaction(tx *tx.Transaction, height uint32) error {
+
+	txhash := bytes.NewBuffer(nil)
+
+	txhash.WriteByte(byte(DATA_Transaction))
+
+	txHashValue := tx.Hash()
+	txHashValue.Serialize(txhash)
+	log.Debug(fmt.Sprintf("transaction header + hash: %x\n", txhash))
+
+
+	w := bytes.NewBuffer(nil)
+	serialization.WriteUint32(w, height)
+	tx.Serialize(w)
+	log.Debug(fmt.Sprintf("transaction tx data: %x\n", w))
+	err := bd.st.Put(txhash.Bytes(), w.Bytes())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
