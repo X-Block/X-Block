@@ -64,3 +64,48 @@ type GlobalVarImport struct {
 	Type GlobalVar
 }
 
+func (GlobalVarImport) isImport() {}
+func (GlobalVarImport) Kind() External {
+	return ExternalGlobal
+}
+func (t GlobalVarImport) MarshalWASM(w io.Writer) error {
+	return t.Type.MarshalWASM(w)
+}
+
+var (
+	ErrImportMutGlobal           = errors.New("wasm: cannot import global mutable variable")
+	ErrNoExportsInImportedModule = errors.New("wasm: imported module has no exports")
+)
+
+type InvalidExternalError uint8
+
+func (e InvalidExternalError) Error() string {
+	return fmt.Sprintf("wasm: invalid external_kind value %d", uint8(e))
+}
+
+type ExportNotFoundError struct {
+	ModuleName string
+	FieldName  string
+}
+
+type KindMismatchError struct {
+	ModuleName string
+	FieldName  string
+	Import     External
+	Export     External
+}
+
+func (e KindMismatchError) Error() string {
+	return fmt.Sprintf("wasm: Mismatching import and export external kind values for %s.%s (%v, %v)", e.FieldName, e.ModuleName, e.Import, e.Export)
+}
+
+func (e ExportNotFoundError) Error() string {
+	return fmt.Sprintf("wasm: couldn't find export with name %s in module %s", e.FieldName, e.ModuleName)
+}
+
+type InvalidFunctionIndexError uint32
+
+func (e InvalidFunctionIndexError) Error() string {
+	return fmt.Sprintf("wasm: Invalid index to function index space: %#x", uint32(e))
+}
+
