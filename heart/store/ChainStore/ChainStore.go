@@ -600,3 +600,291 @@ func (self *ChainStore) GetBookKeeperList() ([]*crypto.PubKey, []*crypto.PubKey,
 	return currBookKeeper, nextBookKeeper, nil
 }
 
+func (bd *ChainStore) persist(b *Block) error {
+	unspents := make(map[Uint256][]uint16)
+	quantities := make(map[Uint256]Fixed64)
+
+	unspentPrefix := []byte{byte(IX_Unspent)}
+	accounts := make(map[Uint160]*account.AccountState, 0)
+
+	bd.st.NewBatch()
+
+	bhhash := bytes.NewBuffer(nil)
+
+	bhhash.WriteByte(byte(DATA_Header))
+
+	blockHash := b.Hash()
+	blockHash.Serialize(bhhash)
+	log.Debug(fmt.Sprintf("block header + hash: %x\n", bhhash))
+
+
+	bd.st.BatchPut(bhhash.Bytes(), w.Bytes())
+
+	bhash := bytes.NewBuffer(nil)
+	bhash.WriteByte(byte(DATA_BlockHash))
+	err := serialization.WriteUint32(bhash, b.Blockdata.Height)
+	if err != nil {
+		return err
+	}
+	log.Debug(fmt.Sprintf("DATA_BlockHash table key: %x\n", bhash))
+
+	hashWriter := bytes.NewBuffer(nil)
+	hashValue := b.Blockdata.Hash()
+	hashValue.Serialize(hashWriter)
+	log.Debug(fmt.Sprintf("DATA_BlockHash table value: %x\n", hashValue))
+
+	needUpdateBookKeeper := false
+	currBookKeeper, nextBookKeeper, err := bd.GetBookKeeperList()
+
+	if len(currBookKeeper) != len(nextBookKeeper) {
+		needUpdateBookKeeper = true
+	} else {
+		for i, _ := range currBookKeeper {
+			if currBookKeeper[i].X.Cmp(nextBookKeeper[i].X) != 0 ||
+				currBookKeeper[i].Y.Cmp(nextBookKeeper[i].Y) != 0 {
+				needUpdateBookKeeper = true
+				break
+			}
+		}
+	}
+	if needUpdateBookKeeper {
+		currBookKeeper = make([]*crypto.PubKey, len(nextBookKeeper))
+		for i := 0; i < len(nextBookKeeper); i++ {
+			currBookKeeper[i] = new(crypto.PubKey)
+			currBookKeeper[i].X = new(big.Int).Set(nextBookKeeper[i].X)
+			currBookKeeper[i].Y = new(big.Int).Set(nextBookKeeper[i].Y)
+		}
+	}
+
+	bd.st.BatchPut(bhash.Bytes(), hashWriter.Bytes())
+
+	nLen := len(b.Transactions)
+
+	for i := 0; i < nLen; i++ {
+
+		if b.Transactions[i].TxType == tx.RegisterAsset ||
+			b.Transactions[i].TxType == tx.IssueAsset ||
+			b.Transactions[i].TxType == tx.TransferAsset ||
+			b.Transactions[i].TxType == tx.Record ||
+			b.Transactions[i].TxType == tx.BookKeeper ||
+			b.Transactions[i].TxType == tx.PrivacyPayload ||
+			b.Transactions[i].TxType == tx.BookKeeping {
+			err = bd.SaveTransaction(b.Transactions[i], b.Blockdata.Height)
+			if err != nil {
+				return err
+			}
+		}
+		if b.Transactions[i].TxType == tx.RegisterAsset {
+			ar := b.Transactions[i].Payload.(*payload.RegisterAsset)
+			err = bd.SaveAsset(b.Transactions[i].Hash(), ar.Asset)
+			if err != nil {
+				return err
+			}
+		}
+
+		if b.Transactions[i].TxType == tx.IssueAsset {
+			results := b.Transactions[i].GetMergedAssetIDValueFromOutputs()
+			for assetId, value := range results {
+				if _, ok := quantities[assetId]; !ok {
+					quantities[assetId] += value
+				} else {
+					quantities[assetId] = value
+				}
+			}
+		}
+		
+		for index := 0; index < len(b.Transactions[i].Outputs); index++ {
+			output := b.Transactions[i].Outputs[index]
+			programHash := output.ProgramHash
+			assetId := output.AssetID
+			if value, ok := accounts[programHash]; ok {
+				value.Balances[assetId] += output.Value
+			} else {
+				accountState, err := bd.GetAccount(programHash)
+				if err != nil && err.Error() != ErrDBNotFound.Error() { return err }
+				if accountState != nil {
+					accountState.Balances[assetId] += output.Value
+				} else {
+					balances := make(map[Uint256]Fixed64, 0)
+					balances[assetId] = output.Value
+					accountState = account.NewAccountState(programHash, balances)
+				}
+				accounts[programHash] = accountState
+			}
+		}
+
+		for index := 0; index < len(b.Transactions[i].UTXOInputs); index++ {
+			input := b.Transactions[i].UTXOInputs[index]
+			transaction, err := bd.GetTransaction(input.ReferTxID)
+			if err != nil { return err }
+			index := input.ReferTxOutputIndex
+			output := transaction.Outputs[index]
+			programHash := output.ProgramHash
+			assetId := output.AssetID
+			if value, ok := accounts[programHash]; ok {
+				value.Balances[assetId] -= output.Value
+			}else {
+				accountState, err := bd.GetAccount(programHash)
+				if err != nil { return err }
+				accountState.Balances[assetId] -= output.Value
+				accounts[programHash] = accountState
+			}
+			if accounts[programHash].Balances[assetId] < 0 {
+				return errors.New(fmt.Sprintf("account programHash:%v, assetId:%v insufficient of balance", programHash, assetId))
+			}
+		}
+
+		txhash := b.Transactions[i].Hash()
+		for index := 0; index < len(b.Transactions[i].Outputs); index++ {
+			unspents[txhash] = append(unspents[txhash], uint16(index))
+		}
+
+		for index := 0; index < len(b.Transactions[i].UTXOInputs); index++ {
+			txhash := b.Transactions[i].UTXOInputs[index].ReferTxID
+
+
+			if _, ok := unspents[txhash]; !ok {
+				unspentValue, err_get := bd.st.Get(append(unspentPrefix, txhash.ToArray()...))
+
+				if err_get != nil {
+					return err_get
+				}
+
+				unspents[txhash], err_get = GetUint16Array(unspentValue)
+				if err_get != nil {
+					return err_get
+				}
+			}
+
+Transactions[i].UTXOInputs[index].ReferTxOutputIndex and delete it
+			for k := 0; k < len(unspents[txhash]); k++ {
+				if unspents[txhash][k] == uint16(b.Transactions[i].UTXOInputs[index].ReferTxOutputIndex) {
+					unspents[txhash] = append(unspents[txhash], unspents[txhash][:k]...)
+					unspents[txhash] = append(unspents[txhash], unspents[txhash][k+1:]...)
+					break
+				}
+			}
+		}
+
+
+		if b.Transactions[i].TxType == tx.BookKeeper {
+			bk := b.Transactions[i].Payload.(*payload.BookKeeper)
+
+			switch bk.Action {
+			case payload.BookKeeperAction_ADD:
+				findflag := false
+				for k := 0; k < len(nextBookKeeper); k++ {
+					if bk.PubKey.X.Cmp(nextBookKeeper[k].X) == 0 && bk.PubKey.Y.Cmp(nextBookKeeper[k].Y) == 0 {
+						findflag = true
+						break
+					}
+				}
+
+				if !findflag {
+					needUpdateBookKeeper = true
+					nextBookKeeper = append(nextBookKeeper, bk.PubKey)
+					sort.Sort(crypto.PubKeySlice(nextBookKeeper))
+				}
+			case payload.BookKeeperAction_SUB:
+				ind := -1
+				for k := 0; k < len(nextBookKeeper); k++ {
+					if bk.PubKey.X.Cmp(nextBookKeeper[k].X) == 0 && bk.PubKey.Y.Cmp(nextBookKeeper[k].Y) == 0 {
+						ind = k
+						break
+					}
+				}
+
+				if ind != -1 {
+					needUpdateBookKeeper = true
+					nextBookKeeper = append(nextBookKeeper[:ind], nextBookKeeper[ind+1:]...)
+				}
+			}
+
+		}
+
+	}
+
+	if needUpdateBookKeeper {
+		bkListKey := bytes.NewBuffer(nil)
+		bkListKey.WriteByte(byte(SYS_CurrentBookKeeper))
+
+		bkListValue := bytes.NewBuffer(nil)
+
+		serialization.WriteUint8(bkListValue, uint8(len(currBookKeeper)))
+		for k := 0; k < len(currBookKeeper); k++ {
+			currBookKeeper[k].Serialize(bkListValue)
+		}
+
+		serialization.WriteUint8(bkListValue, uint8(len(nextBookKeeper)))
+		for k := 0; k < len(nextBookKeeper); k++ {
+			nextBookKeeper[k].Serialize(bkListValue)
+		}
+
+		bd.st.BatchPut(bkListKey.Bytes(), bkListValue.Bytes())
+
+	}
+	for txhash, value := range unspents {
+		unspentKey := bytes.NewBuffer(nil)
+		unspentKey.WriteByte(byte(IX_Unspent))
+		txhash.Serialize(unspentKey)
+
+		if len(value) == 0 {
+			bd.st.BatchDelete(unspentKey.Bytes())
+		} else {
+			unspentArray := ToByteArray(value)
+			bd.st.BatchPut(unspentKey.Bytes(), unspentArray)
+		}
+	}
+
+	for assetId, value := range quantities {
+		quantityKey := bytes.NewBuffer(nil)
+		quantityKey.WriteByte(byte(ST_QuantityIssued))
+		assetId.Serialize(quantityKey)
+
+		qt, err := bd.GetQuantityIssued(assetId)
+		if err != nil {
+			return err
+		}
+
+		qt = qt + value
+
+		quantityArray := bytes.NewBuffer(nil)
+		qt.Serialize(quantityArray)
+
+		bd.st.BatchPut(quantityKey.Bytes(), quantityArray.Bytes())
+		log.Debug(fmt.Sprintf("quantityKey: %x\n", quantityKey.Bytes()))
+		log.Debug(fmt.Sprintf("quantityArray: %x\n", quantityArray.Bytes()))
+	}
+
+	for programHash, value := range accounts {
+		accountKey := new(bytes.Buffer)
+		accountKey.WriteByte(byte(ST_ACCOUNT))
+		programHash.Serialize(accountKey)
+
+		accountValue := new(bytes.Buffer)
+		value.Serialize(accountValue)
+
+		bd.st.BatchPut(accountKey.Bytes(), accountValue.Bytes())
+	}
+
+
+	bd.currentBlockHeight = b.Blockdata.Height
+
+	currentBlockKey := bytes.NewBuffer(nil)
+	currentBlockKey.WriteByte(byte(SYS_CurrentBlock))
+
+	currentBlock := bytes.NewBuffer(nil)
+	blockHash.Serialize(currentBlock)
+	serialization.WriteUint32(currentBlock, b.Blockdata.Height)
+
+	bd.st.BatchPut(currentBlockKey.Bytes(), currentBlock.Bytes())
+
+	err = bd.st.BatchCommit()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
