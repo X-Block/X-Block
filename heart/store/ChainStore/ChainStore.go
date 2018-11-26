@@ -318,3 +318,35 @@ func (bd *ChainStore) containsBlock(hash Uint256) bool {
 	}
 }
 
+func (bd *ChainStore) VerifyHeader(header *Header) bool {
+	if bd.containsBlock(header.Blockdata.Hash()) {
+		return true
+	}
+
+	prevHeader := bd.GetHeaderWithCache(header.Blockdata.PrevBlockHash)
+
+	if prevHeader == nil {
+		log.Error("[VerifyHeader] failed, not found prevHeader.")
+		return false
+	}
+
+	if prevHeader.Blockdata.Height+1 != header.Blockdata.Height {
+		log.Error("[VerifyHeader] failed, prevHeader.Height + 1 != header.Height")
+		return false
+	}
+
+	if prevHeader.Blockdata.Timestamp >= header.Blockdata.Timestamp {
+		log.Error("[VerifyHeader] failed, prevHeader.Timestamp >= header.Timestamp")
+		return false
+	}
+
+	flag, err := validation.VerifySignableData(header.Blockdata)
+	if flag == false || err != nil {
+		log.Error("[VerifyHeader] failed, VerifySignableData failed.")
+		log.Error(err)
+		return false
+	}
+
+	return true
+}
+
