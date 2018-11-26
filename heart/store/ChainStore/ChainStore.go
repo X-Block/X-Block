@@ -419,3 +419,58 @@ func (bd *ChainStore) GetHeader(hash Uint256) (*Header, error) {
 	return h, err
 }
 
+func (bd *ChainStore) SaveAsset(assetId Uint256, asset *Asset) error {
+	w := bytes.NewBuffer(nil)
+
+	asset.Serialize(w)
+
+
+	assetKey := bytes.NewBuffer(nil)
+
+	assetKey.WriteByte(byte(ST_Info))
+
+	assetId.Serialize(assetKey)
+
+	log.Debug(fmt.Sprintf("asset key: %x\n", assetKey))
+	err := bd.st.Put(assetKey.Bytes(), w.Bytes())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (bd *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
+	log.Debug(fmt.Sprintf("GetAsset Hash: %x\n", hash))
+
+	asset := new(Asset)
+
+	prefix := []byte{byte(ST_Info)}
+	data, err_get := bd.st.Get(append(prefix, hash.ToArray()...))
+
+	log.Debug(fmt.Sprintf("GetAsset Data: %x\n", data))
+	if err_get != nil {
+
+		return nil, err_get
+	}
+
+	r := bytes.NewReader(data)
+	asset.Deserialize(r)
+
+	return asset, nil
+}
+
+func (bd *ChainStore) GetTransaction(hash Uint256) (*tx.Transaction, error) {
+	log.Debug()
+	log.Debug(fmt.Sprintf("GetTransaction Hash: %x\n", hash))
+
+	t := new(tx.Transaction)
+	err := bd.getTx(t, hash)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return t, nil
+}
+
