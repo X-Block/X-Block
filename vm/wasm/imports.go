@@ -109,3 +109,82 @@ func (e InvalidFunctionIndexError) Error() string {
 	return fmt.Sprintf("wasm: Invalid index to function index space: %#x", uint32(e))
 }
 
+func (module *Module) resolveImports(resolve ResolveFunc) error {
+	if module.Import == nil {
+		return nil
+	}
+
+	modules := make(map[string]*Module)
+
+	var funcs uint32
+	for _, importEntry := range module.Import.Entries {
+		importedModule, ok := modules[importEntry.ModuleName]
+		if !ok {
+			var err error
+			importedModule, err = resolve(importEntry.ModuleName)
+			if err != nil {
+				return err
+			}
+
+			modules[importEntry.ModuleName] = importedModule
+		}
+
+		if importedModule.Export == nil {
+			return ErrNoExportsInImportedModule
+		}
+
+		exportEntry, ok := importedModule.Export.Entries[importEntry.FieldName]
+		if !ok {
+			return ExportNotFoundError{importEntry.ModuleName, importEntry.FieldName}
+		}
+
+		if exportEntry.Kind != importEntry.Type.Kind() {
+			return KindMismatchError{
+				FieldName:  importEntry.FieldName,
+				ModuleName: importEntry.ModuleName,
+				Import:     importEntry.Type.Kind(),
+				Export:     exportEntry.Kind,
+			}
+		}
+
+		index := exportEntry.Index
+
+		switch exportEntry.Kind {
+		case ExternalFunction:
+			fn := importedModule.GetFunction(int(index))
+			if fn == nil {
+				return InvalidFunctionIndexError(index)
+			}
+			module.FunctionIndexSpace = append(module.FunctionIndexSpace, *fn)
+			module.Code.Bodies = append(module.Code.Bodies, *fn.Body)
+			module.imports.Funcs = append(module.imports.Funcs, funcs)
+			funcs++
+		case ExternalGlobal:
+			glb := importedModule.GetGlobal(int(index))
+			if glb == nil {
+				return InvalidGlobalIndexError(index)
+			}
+			if glb.Type.Mutable {
+				return ErrImportMutGlobal
+			}
+			module.GlobalIndexSpace = append(module.GlobalIndexSpace, *glb)
+			module.imports.Globals++
+
+		case ExternalTable:
+			if int(index) >= len(importedModule.TableIndexSpace) {
+				return InvalidTableIndexError(index)
+			}
+			module.TableIndexSpace[0] = importedModule.TableIndexSpace[0]
+			module.imports.Tables++
+		case ExternalMemory:
+			if int(index) >= len(importedModule.LinearMemoryIndexSpace) {
+				return InvalidLinearMemoryIndexError(index)
+			}
+			module.LinearMemoryIndexSpace[0] = importedModule.LinearMemoryIndexSpace[0]
+			module.imports.Memories++
+		default:
+			return InvalidExternalError(exportEntry.Kind)
+		}
+	}
+	return nil
+}
