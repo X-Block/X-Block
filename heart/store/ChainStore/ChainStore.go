@@ -888,3 +888,55 @@ Transactions[i].UTXOInputs[index].ReferTxOutputIndex and delete it
 	return nil
 }
 
+func (bd *ChainStore) addHeader(header *Header) {
+	log.Debug(fmt.Sprintf("addHeader(), Height=%d\n", header.Blockdata.Height))
+
+	hash := header.Blockdata.Hash()
+	bd.headerIndex[header.Blockdata.Height] = hash
+	for header.Blockdata.Height-bd.storedHeaderCount >= HeaderHashListCount {
+		hashBuffer := new(bytes.Buffer)
+		serialization.WriteVarUint(hashBuffer, uint64(HeaderHashListCount))
+		var hashArray []byte
+		for i := 0; i < HeaderHashListCount; i++ {
+			index := bd.storedHeaderCount + uint32(i)
+			thash := bd.headerIndex[index]
+			thehash := thash.ToArray()
+			hashArray = append(hashArray, thehash...)
+		}
+		hashBuffer.Write(hashArray)
+
+		hhlPrefix := bytes.NewBuffer(nil)
+
+		hhlPrefix.WriteByte(byte(IX_HeaderHashList))
+		serialization.WriteUint32(hhlPrefix, bd.storedHeaderCount)
+
+		bd.st.BatchPut(hhlPrefix.Bytes(), hashBuffer.Bytes())
+		bd.storedHeaderCount += HeaderHashListCount
+	}
+
+	headerKey := bytes.NewBuffer(nil)
+	headerKey.WriteByte(byte(DATA_Header))
+	blockHash := header.Blockdata.Hash()
+	blockHash.Serialize(headerKey)
+	log.Debug(fmt.Sprintf("header key: %x\n", headerKey))
+
+	w := bytes.NewBuffer(nil)
+	var systemfee uint64 = 0xFFFFFFFFFFFFFFFF
+	serialization.WriteUint64(w, systemfee)
+	header.Serialize(w)
+	log.Debug(fmt.Sprintf("header data: %x\n", w))
+
+	bd.st.BatchPut(headerKey.Bytes(), w.Bytes())
+
+	currentHeaderKey := bytes.NewBuffer(nil)
+	currentHeaderKey.WriteByte(byte(SYS_CurrentHeader))
+
+	currentHeader := bytes.NewBuffer(nil)
+	blockHash.Serialize(currentHeader)
+	serialization.WriteUint32(currentHeader, header.Blockdata.Height)
+
+	bd.st.BatchPut(currentHeaderKey.Bytes(), currentHeader.Bytes())
+
+	log.Debug("[addHeader]: finish, header height:", header.Blockdata.Height)
+}
+
