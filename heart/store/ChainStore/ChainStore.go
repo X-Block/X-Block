@@ -287,3 +287,34 @@ func (bd *ChainStore) GetCurrentBlockHash() Uint256 {
 	return bd.headerIndex[bd.currentBlockHeight]
 }
 
+func (bd *ChainStore) GetContract(hash []byte) ([]byte, error) {
+	prefix := []byte{byte(DATA_Contract)}
+	bData, err_get := bd.st.Get(append(prefix, hash...))
+	if err_get != nil {
+		return nil, err_get
+	}
+
+	log.Debug("GetContract Data: ", bData)
+
+	return bData, nil
+}
+
+func (bd *ChainStore) GetHeaderWithCache(hash Uint256) *Header {
+	if _, ok := bd.headerCache[hash]; ok {
+		return bd.headerCache[hash]
+	}
+
+	header, _ := bd.GetHeader(hash)
+
+	return header
+}
+
+func (bd *ChainStore) containsBlock(hash Uint256) bool {
+	header := bd.GetHeaderWithCache(hash)
+	if header != nil {
+		return header.Blockdata.Height <= bd.currentBlockHeight
+	} else {
+		return false
+	}
+}
+
