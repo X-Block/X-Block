@@ -34,3 +34,11 @@ func readString(r io.Reader, n int) (string, error) {
 	return string(bytes), nil
 }
 
+func readStringUint(r io.Reader) (string, error) {
+	n, err := leb128.ReadVarUint32(r)
+	if err != nil {
+		return "", err
+	}
+	return readString(r, int(n))
+}
+
