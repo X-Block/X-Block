@@ -218,3 +218,37 @@ func (bd *ChainStore) InitLedgerStoreWithGenesisBlock(genesisBlock *Block, defau
 	}
 }
 
+func (bd *ChainStore) InitLedgerStore(l *Ledger) error {
+	return nil
+}
+
+func (bd *ChainStore) IsDoubleSpend(tx *tx.Transaction) bool {
+	if len(tx.UTXOInputs) == 0 {
+		return false
+	}
+
+	unspentPrefix := []byte{byte(IX_Unspent)}
+	for i := 0; i < len(tx.UTXOInputs); i++ {
+		txhash := tx.UTXOInputs[i].ReferTxID
+		unspentValue, err_get := bd.st.Get(append(unspentPrefix, txhash.ToArray()...))
+		if err_get != nil {
+			return true
+		}
+
+		unspents, _ := GetUint16Array(unspentValue)
+		findFlag := false
+		for k := 0; k < len(unspents); k++ {
+			if unspents[k] == tx.UTXOInputs[i].ReferTxOutputIndex {
+				findFlag = true
+				break
+			}
+		}
+
+		if !findFlag {
+			return true
+		}
+	}
+
+	return false
+}
+
