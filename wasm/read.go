@@ -18,3 +18,11 @@ func readBytes(r io.Reader, n int) ([]byte, error) {
 	return bytes, nil
 }
 
+func readBytesUint(r io.Reader) ([]byte, error) {
+	n, err := leb128.ReadVarUint32(r)
+	if err != nil {
+		return nil, err
+	}
+	return readBytes(r, int(n))
+}
+
