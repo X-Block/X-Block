@@ -1034,3 +1034,77 @@ func (bd *ChainStore) GetQuantityIssued(assetId Uint256) (Fixed64, error) {
 	return quantity, nil
 }
 
+func (bd *ChainStore) GetUnspent(txid Uint256, index uint16) (*tx.TxOutput, error) {
+	if ok, _ := bd.ContainsUnspent(txid, index); ok {
+		Tx, err := bd.GetTransaction(txid)
+		if err != nil {
+			return nil, err
+		}
+
+		return Tx.Outputs[index], nil
+	}
+
+	return nil, errors.New("[GetUnspent] NOT ContainsUnspent.")
+}
+
+func (bd *ChainStore) ContainsUnspent(txid Uint256, index uint16) (bool, error) {
+	unspentPrefix := []byte{byte(IX_Unspent)}
+	unspentValue, err_get := bd.st.Get(append(unspentPrefix, txid.ToArray()...))
+
+	if err_get != nil {
+		return false, err_get
+	}
+
+	unspentArray, err_get := GetUint16Array(unspentValue)
+	if err_get != nil {
+		return false, err_get
+	}
+
+	for i := 0; i < len(unspentArray); i++ {
+		if unspentArray[i] == index {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func (bd *ChainStore) GetCurrentHeaderHash() Uint256 {
+	bd.mu.RLock()
+	defer bd.mu.RUnlock()
+	return bd.headerIndex[uint32(len(bd.headerIndex)-1)]
+}
+
+func (bd *ChainStore) GetHeaderHashByHeight(height uint32) Uint256 {
+	bd.mu.RLock()
+	defer bd.mu.RUnlock()
+
+	return bd.headerIndex[height]
+}
+
+func (bd *ChainStore) GetHeaderHeight() uint32 {
+	bd.mu.RLock()
+	defer bd.mu.RUnlock()
+
+	return uint32(len(bd.headerIndex) - 1)
+}
+
+func (bd *ChainStore) GetHeight() uint32 {
+	bd.mu.RLock()
+	defer bd.mu.RUnlock()
+
+	return bd.currentBlockHeight
+}
+
+func (bd *ChainStore) GetAccount(programHash Uint160) (*account.AccountState, error) {
+	accountPrefix := []byte{byte(ST_ACCOUNT)}
+
+	state, err := bd.st.Get(append(accountPrefix, programHash.ToArray()...))
+
+	if err != nil { return nil, err }
+
+	accountState := new(account.AccountState)
+	accountState.Deserialize(bytes.NewBuffer(state))
+
+	return accountState, nil
+}
