@@ -105,3 +105,203 @@ type FunctionSig struct {
 	ReturnTypes []ValueType
 }
 
+func (f FunctionSig) String() string {
+	return fmt.Sprintf("<func %v -> %v>", f.ParamTypes, f.ReturnTypes)
+}
+
+type InvalidTypeConstructorError struct {
+	Wanted int
+	Got    int
+}
+
+func (e InvalidTypeConstructorError) Error() string {
+	return fmt.Sprintf("wasm: invalid type constructor: wanted %d, got %d", e.Wanted, e.Got)
+}
+
+func (f *FunctionSig) UnmarshalWASM(r io.Reader) error {
+	form, err := leb128.ReadVarint32(r)
+	if err != nil {
+		return err
+	}
+	f.Form = int8(form)
+
+	paramCount, err := leb128.ReadVarUint32(r)
+	if err != nil {
+		return err
+	}
+	f.ParamTypes = make([]ValueType, paramCount)
+
+	for i := range f.ParamTypes {
+		err = f.ParamTypes[i].UnmarshalWASM(r)
+		if err != nil {
+			return err
+		}
+	}
+
+	returnCount, err := leb128.ReadVarUint32(r)
+	if err != nil {
+		return err
+	}
+
+	f.ReturnTypes = make([]ValueType, returnCount)
+	for i := range f.ReturnTypes {
+		err = f.ReturnTypes[i].UnmarshalWASM(r)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (f *FunctionSig) MarshalWASM(w io.Writer) error {
+	_, err := leb128.WriteVarint64(w, int64(f.Form))
+	if err != nil {
+		return err
+	}
+
+	_, err = leb128.WriteVarUint32(w, uint32(len(f.ParamTypes)))
+	if err != nil {
+		return err
+	}
+	for _, p := range f.ParamTypes {
+		err = p.MarshalWASM(w)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = leb128.WriteVarUint32(w, uint32(len(f.ReturnTypes)))
+	if err != nil {
+		return err
+	}
+	for _, p := range f.ReturnTypes {
+		err = p.MarshalWASM(w)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+
+type GlobalVar struct {
+	Type    ValueType 
+	Mutable bool      
+}
+
+func (g *GlobalVar) UnmarshalWASM(r io.Reader) error {
+	*g = GlobalVar{}
+
+	err := g.Type.UnmarshalWASM(r)
+	if err != nil {
+		return err
+	}
+
+	m, err := leb128.ReadVarUint32(r)
+	if err != nil {
+		return err
+	}
+
+	g.Mutable = m == 1
+
+	return nil
+}
+
+func (g *GlobalVar) MarshalWASM(w io.Writer) error {
+	if err := g.Type.MarshalWASM(w); err != nil {
+		return err
+	}
+	var m uint32
+	if g.Mutable {
+		m = 1
+	}
+	if _, err := leb128.WriteVarUint32(w, m); err != nil {
+		return err
+	}
+	return nil
+}
+
+
+type Table struct {
+	ElementType ElemType
+	Limits      ResizableLimits
+}
+
+func (t *Table) UnmarshalWASM(r io.Reader) error {
+	err := t.ElementType.UnmarshalWASM(r)
+	if err != nil {
+		return err
+	}
+
+	err = t.Limits.UnmarshalWASM(r)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (t *Table) MarshalWASM(w io.Writer) error {
+	if err := t.ElementType.MarshalWASM(w); err != nil {
+		return err
+	}
+	if err := t.Limits.MarshalWASM(w); err != nil {
+		return err
+	}
+	return nil
+}
+
+type Memory struct {
+	Limits ResizableLimits
+}
+
+func (m *Memory) UnmarshalWASM(r io.Reader) error {
+	return m.Limits.UnmarshalWASM(r)
+}
+
+func (m *Memory) MarshalWASM(w io.Writer) error {
+	return m.Limits.MarshalWASM(w)
+}
+
+type External uint8
+
+const (
+	ExternalFunction External = 0
+	ExternalTable    External = 1
+	ExternalMemory   External = 2
+	ExternalGlobal   External = 3
+)
+
+func (e External) String() string {
+	switch e {
+	case ExternalFunction:
+		return "function"
+	case ExternalTable:
+		return "table"
+	case ExternalMemory:
+		return "memory"
+	case ExternalGlobal:
+		return "global"
+	default:
+		return "<unknown external_kind>"
+	}
+}
+func (e *External) UnmarshalWASM(r io.Reader) error {
+	bytes, err := readBytes(r, 1)
+	if err != nil {
+		return err
+	}
+	*e = External(bytes[0])
+	return nil
+}
+func (e External) MarshalWASM(w io.Writer) error {
+	_, err := w.Write([]byte{byte(e)})
+	return err
+}
+
+type ResizableLimits struct {
+	Flags   uint32 
+	Initial uint32 
+	Maximum uint32 
+}
+
