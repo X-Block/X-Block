@@ -305,3 +305,40 @@ type ResizableLimits struct {
 	Maximum uint32 
 }
 
+func (lim *ResizableLimits) UnmarshalWASM(r io.Reader) error {
+	*lim = ResizableLimits{}
+	f, err := leb128.ReadVarUint32(r)
+	if err != nil {
+		return err
+	}
+	lim.Flags = f
+
+	lim.Initial, err = leb128.ReadVarUint32(r)
+	if err != nil {
+		return err
+	}
+
+	if lim.Flags&0x1 != 0 {
+		m, err := leb128.ReadVarUint32(r)
+		if err != nil {
+			return err
+		}
+		lim.Maximum = m
+	}
+	return nil
+}
+
+func (lim *ResizableLimits) MarshalWASM(w io.Writer) error {
+	if _, err := leb128.WriteVarUint32(w, uint32(lim.Flags)); err != nil {
+		return err
+	}
+	if _, err := leb128.WriteVarUint32(w, uint32(lim.Initial)); err != nil {
+		return err
+	}
+	if lim.Flags&0x1 != 0 {
+		if _, err := leb128.WriteVarUint32(w, uint32(lim.Maximum)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
