@@ -1007,3 +1007,30 @@ headerIndex.count:%d",b.Blockdata.Height, uint32(len(bd.headerIndex)) )),ErrDupl
 	return nil
 }
 
+func (bd *ChainStore) BlockInCache(hash Uint256) bool {
+	bd.mu.RLock()
+	defer bd.mu.RUnlock()
+	if _, ok := bd.blockCache[hash]; ok {
+		return true
+	}
+	return false
+}
+
+func (bd *ChainStore) GetQuantityIssued(assetId Uint256) (Fixed64, error) {
+	log.Debug(fmt.Sprintf("GetQuantityIssued Hash: %x\n", assetId))
+
+	prefix := []byte{byte(ST_QuantityIssued)}
+	data, err_get := bd.st.Get(append(prefix, assetId.ToArray()...))
+	log.Debug(fmt.Sprintf("GetQuantityIssued Data: %x\n", data))
+
+	var quantity Fixed64
+	if err_get != nil {
+		quantity = Fixed64(0)
+	} else {
+		r := bytes.NewReader(data)
+		quantity.Deserialize(r)
+	}
+
+	return quantity, nil
+}
+
