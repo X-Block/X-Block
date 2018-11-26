@@ -940,3 +940,30 @@ func (bd *ChainStore) addHeader(header *Header) {
 	log.Debug("[addHeader]: finish, header height:", header.Blockdata.Height)
 }
 
+func (bd *ChainStore) persistBlocks(ledger *Ledger) {
+	bd.mu.Lock()
+	defer bd.mu.Unlock()
+	for !bd.disposed {
+		if uint32(len(bd.headerIndex)) < bd.currentBlockHeight+1 {
+			log.Warn("[persistBlocks]: warn, headerIndex.count < currentBlockHeight + 1")
+			break
+		}
+
+		hash := bd.headerIndex[bd.currentBlockHeight+1]
+
+		block, ok := bd.blockCache[hash]
+		if !ok {
+			log.Warn("[persistBlocks]: warn, blockCache not contain key hash.")
+			break
+		}
+		bd.persist(block)
+
+		ledger.Blockchain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
+		ledger.Blockchain.BlockHeight = block.Blockdata.Height
+		log.Trace("The latest block height:", block.Blockdata.Height)
+
+		delete(bd.blockCache, hash)
+	}
+
+}
+
