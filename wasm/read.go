@@ -26,3 +26,11 @@ func readBytesUint(r io.Reader) ([]byte, error) {
 	return readBytes(r, int(n))
 }
 
+func readString(r io.Reader, n int) (string, error) {
+	bytes, err := readBytes(r, n)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
+}
+
