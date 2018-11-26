@@ -389,3 +389,33 @@ func (bd *ChainStore) AddHeaders(headers []Header, ledger *Ledger) error {
 	return nil
 }
 
+func (bd *ChainStore) GetHeader(hash Uint256) (*Header, error) {
+	var h *Header = new(Header)
+
+	h.Blockdata = new(Blockdata)
+	h.Blockdata.Program = new(program.Program)
+
+	prefix := []byte{byte(DATA_Header)}
+	log.Debug("GetHeader Data:", hash.ToArray())
+	data, err_get := bd.st.Get(append(prefix, hash.ToArray()...))
+	if err_get != nil {
+
+		return nil, err_get
+	}
+
+	r := bytes.NewReader(data)
+	systemfee, err := serialization.ReadUint64(r)
+	if err != nil {
+		return nil, err
+	}
+	log.Debug(fmt.Sprintf("systemfee: %d\n", systemfee))
+
+
+	err = h.Deserialize(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return h, err
+}
+
