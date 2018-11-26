@@ -519,3 +519,84 @@ func (bd *ChainStore) SaveTransaction(tx *tx.Transaction, height uint32) error {
 	return nil
 }
 
+func (bd *ChainStore) GetBlock(hash Uint256) (*Block, error) {
+	var b *Block = new(Block)
+
+	b.Blockdata = new(Blockdata)
+	b.Blockdata.Program = new(program.Program)
+
+	prefix := []byte{byte(DATA_Header)}
+	bHash, err_get := bd.st.Get(append(prefix, hash.ToArray()...))
+	if err_get != nil {
+
+		return nil, err_get
+	}
+
+	r := bytes.NewReader(bHash)
+
+
+	_, err := serialization.ReadUint64(r)
+	if err != nil {
+		return nil, err
+	}
+
+
+	err = b.FromTrimmedData(r)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 0; i < len(b.Transactions); i++ {
+		err = bd.getTx(b.Transactions[i], b.Transactions[i].Hash())
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return b, nil
+}
+
+func (self *ChainStore) GetBookKeeperList() ([]*crypto.PubKey, []*crypto.PubKey, error) {
+	prefix := []byte{byte(SYS_CurrentBookKeeper)}
+	bkListValue, err_get := self.st.Get(prefix)
+	if err_get != nil {
+		return nil, nil, err_get
+	}
+
+	r := bytes.NewReader(bkListValue)
+
+	currCount, err := serialization.ReadUint8(r)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var currBookKeeper = make([]*crypto.PubKey, currCount)
+	for i := uint8(0); i < currCount; i++ {
+		bk := new(crypto.PubKey)
+		err := bk.DeSerialize(r)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		currBookKeeper[i] = bk
+	}
+
+	nextCount, err := serialization.ReadUint8(r)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var nextBookKeeper = make([]*crypto.PubKey, nextCount)
+	for i := uint8(0); i < nextCount; i++ {
+		bk := new(crypto.PubKey)
+		err := bk.DeSerialize(r)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		nextBookKeeper[i] = bk
+	}
+
+	return currBookKeeper, nextBookKeeper, nil
+}
+
