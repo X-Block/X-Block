@@ -46,3 +46,62 @@ func (t ValueType) String() string {
 
 const TypeFunc int = -0x20
 
+func (t *ValueType) UnmarshalWASM(r io.Reader) error {
+	v, err := leb128.ReadVarint32(r)
+	if err != nil {
+		return err
+	}
+	*t = ValueType(v)
+	return nil
+}
+
+func (t ValueType) MarshalWASM(w io.Writer) error {
+	_, err := leb128.WriteVarint64(w, int64(t))
+	return err
+}
+
+
+type BlockType ValueType 
+const BlockTypeEmpty BlockType = -0x40
+
+func (b BlockType) String() string {
+	if b == BlockTypeEmpty {
+		return "<empty block>"
+	}
+	return ValueType(b).String()
+}
+
+
+type ElemType int 
+
+const ElemTypeAnyFunc ElemType = -0x10
+
+func (t *ElemType) UnmarshalWASM(r io.Reader) error {
+	b, err := leb128.ReadVarint32(r)
+	if err != nil {
+		return err
+	}
+	*t = ElemType(b)
+	return nil
+}
+
+func (t ElemType) MarshalWASM(w io.Writer) error {
+	_, err := leb128.WriteVarint64(w, int64(t))
+	return err
+}
+
+func (t ElemType) String() string {
+	if t == ElemTypeAnyFunc {
+		return "anyfunc"
+	}
+
+	return "<unknown elem_type>"
+}
+
+
+type FunctionSig struct {
+	Form int8
+	ParamTypes  []ValueType
+	ReturnTypes []ValueType
+}
+
