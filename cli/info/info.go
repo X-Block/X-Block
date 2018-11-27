@@ -7,7 +7,6 @@ import (
 	. "XBlock/cli/common"
 	"XBlock/net/httpjson"
 
-	"github.com/urfave/cli"
 )
 
 func infoAction(c *cli.Context) (err error) {
