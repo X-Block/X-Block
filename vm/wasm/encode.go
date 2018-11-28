@@ -52,3 +52,10 @@ func writeBytesUint(w io.Writer, p []byte) error {
 	return err
 }
 
+func writeU32(w io.Writer, n uint32) error {
+	var buf [4]byte
+	binary.LittleEndian.PutUint32(buf[:], n)
+	_, err := w.Write(buf[:])
+	return err
+}
+
