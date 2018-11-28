@@ -82,3 +82,84 @@ outer:
 
 	return buf.Bytes(), nil
 }
+
+func (m *Module) ExecInitExpr(expr []byte) (interface{}, error) {
+	var stack []uint64
+	var lastVal ValueType
+	r := bytes.NewReader(expr)
+
+	if r.Len() == 0 {
+		return nil, ErrEmptyInitExpr
+	}
+
+	for {
+		b, err := r.ReadByte()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return nil, err
+		}
+		switch b {
+		case i32Const:
+			i, err := leb128.ReadVarint32(r)
+			if err != nil {
+				return nil, err
+			}
+			stack = append(stack, uint64(i))
+			lastVal = ValueTypeI32
+		case i64Const:
+			i, err := leb128.ReadVarint64(r)
+			if err != nil {
+				return nil, err
+			}
+			stack = append(stack, uint64(i))
+			lastVal = ValueTypeI64
+		case f32Const:
+			i, err := readU32(r)
+			if err != nil {
+				return nil, err
+			}
+			stack = append(stack, uint64(i))
+			lastVal = ValueTypeF32
+		case f64Const:
+			i, err := readU64(r)
+			if err != nil {
+				return nil, err
+			}
+			stack = append(stack, i)
+			lastVal = ValueTypeF64
+		case getGlobal:
+			index, err := leb128.ReadVarUint32(r)
+			if err != nil {
+				return nil, err
+			}
+			globalVar := m.GetGlobal(int(index))
+			if globalVar == nil {
+				return nil, InvalidGlobalIndexError(index)
+			}
+			lastVal = globalVar.Type.Type
+		case end:
+			break
+		default:
+			return nil, InvalidInitExprOpError(b)
+		}
+	}
+
+	if len(stack) == 0 {
+		return nil, nil
+	}
+
+	v := stack[len(stack)-1]
+	switch lastVal {
+	case ValueTypeI32:
+		return int32(v), nil
+	case ValueTypeI64:
+		return int64(v), nil
+	case ValueTypeF32:
+		return math.Float32frombits(uint32(v)), nil
+	case ValueTypeF64:
+		return math.Float64frombits(uint64(v)), nil
+	default:
+		panic(fmt.Sprintf("Invalid value type produced by initializer expression: %d", int8(lastVal)))
+	}
+}
