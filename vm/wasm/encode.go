@@ -43,3 +43,12 @@ func writeStringUint(w io.Writer, s string) error {
 	return writeBytesUint(w, []byte(s))
 }
 
+func writeBytesUint(w io.Writer, p []byte) error {
+	_, err := leb128.WriteVarUint32(w, uint32(len(p)))
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(p)
+	return err
+}
+
