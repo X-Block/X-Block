@@ -59,3 +59,9 @@ func writeU32(w io.Writer, n uint32) error {
 	return err
 }
 
+func writeU64(w io.Writer, n uint64) error {
+	var buf [8]byte
+	binary.LittleEndian.PutUint64(buf[:], n)
+	_, err := w.Write(buf[:])
+	return err
+}
