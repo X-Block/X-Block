@@ -107,3 +107,40 @@ func DecodeModule(r io.Reader) (*Module, error) {
 	}
 }
 
+func ReadModule(r io.Reader, resolvePath ResolveFunc) (*Module, error) {
+	m, err := DecodeModule(r)
+	if err != nil {
+		return nil, err
+	}
+
+	m.LinearMemoryIndexSpace = make([][]byte, 1)
+	if m.Table != nil {
+		m.TableIndexSpace = make([][]uint32, int(len(m.Table.Entries)))
+	}
+
+	if m.Import != nil && resolvePath != nil {
+		if m.Code == nil {
+			m.Code = &SectionCode{}
+		}
+
+		err := m.resolveImports(resolvePath)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	for _, fn := range []func() error{
+		m.populateGlobals,
+		m.populateFunctions,
+		m.populateTables,
+		m.populateLinearMemory,
+	} {
+		if err := fn(); err != nil {
+			return nil, err
+		}
+
+	}
+
+	logger.Printf("There are %d entries in the function index space.", len(m.FunctionIndexSpace))
+	return m, nil
+}
