@@ -80,3 +80,30 @@ func NewModule() *Module {
 
 type ResolveFunc func(name string) (*Module, error)
 
+func DecodeModule(r io.Reader) (*Module, error) {
+	reader := &readpos.ReadPos{
+		R:      r,
+		CurPos: 0,
+	}
+	m := &Module{}
+	magic, err := readU32(reader)
+	if err != nil {
+		return nil, err
+	}
+	if magic != Magic {
+		return nil, ErrInvalidMagic
+	}
+	if m.Version, err = readU32(reader); err != nil {
+		return nil, err
+	}
+
+	for {
+		done, err := m.readSection(reader)
+		if err != nil {
+			return nil, err
+		} else if done {
+			return m, nil
+		}
+	}
+}
+
