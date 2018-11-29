@@ -54,3 +54,29 @@ type Module struct {
 }
 
 
+func (m *Module) Custom(name string) *SectionCustom {
+	for _, s := range m.Customs {
+		if s.Name == name {
+			return s
+		}
+	}
+	return nil
+}
+
+
+func NewModule() *Module {
+	return &Module{
+		Types:    &SectionTypes{},
+		Import:   &SectionImports{},
+		Table:    &SectionTables{},
+		Memory:   &SectionMemories{},
+		Global:   &SectionGlobals{},
+		Export:   &SectionExports{},
+		Start:    &SectionStartFunction{},
+		Elements: &SectionElements{},
+		Data:     &SectionData{},
+	}
+}
+
+type ResolveFunc func(name string) (*Module, error)
+
