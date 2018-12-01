@@ -10,3 +10,9 @@ import (
 	"github.com/X-Block/X-Block/tree/master/vm/wasm"
 )
 
+var testPaths = []string{
+	"testdata",
+	"../exec/testdata",
+	"../exec/testdata/spec",
+}
+
