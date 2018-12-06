@@ -28,3 +28,14 @@ func ReadVarUint32(r io.Reader) (uint32, error) {
 	return n, err
 }
 
+func ReadVarint32Size(r io.Reader) (res int32, size uint, err error) {
+	res64, size, err := ReadVarint64Size(r)
+	res = int32(res64)
+	return
+}
+
+func ReadVarint32(r io.Reader) (int32, error) {
+	n, _, err := ReadVarint32Size(r)
+	return n, err
+}
+
