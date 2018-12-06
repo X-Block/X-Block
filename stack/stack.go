@@ -14,3 +14,22 @@ func (s *Stack) Pop() uint64 {
 	return v
 }
 
+func (s *Stack) SetTop(v uint64) {
+	s.slice[len(s.slice)-1] = v
+}
+
+func (s *Stack) Top() uint64 {
+	return s.slice[len(s.slice)-1]
+}
+
+func (s *Stack) Get(i int) uint64 {
+	return s.slice[i]
+}
+
+func (s *Stack) Set(i int, v uint64) {
+	s.slice[i] = v
+}
+
+func (s *Stack) Len() int {
+	return len(s.slice)
+}
