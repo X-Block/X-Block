@@ -137,4 +137,44 @@ func (vm *VM) newFuncTable() {
 	vm.funcTable[ops.F64ConvertUI64] = vm.f64ConvertUI64
 	vm.funcTable[ops.F64PromoteF32] = vm.f64PromoteF32
 
+	vm.funcTable[ops.I32Load] = vm.i32Load
+	vm.funcTable[ops.I64Load] = vm.i64Load
+	vm.funcTable[ops.F32Load] = vm.f32Load
+	vm.funcTable[ops.F64Load] = vm.f64Load
+	vm.funcTable[ops.I32Load8s] = vm.i32Load8s
+	vm.funcTable[ops.I32Load8u] = vm.i32Load8u
+	vm.funcTable[ops.I32Load16s] = vm.i32Load16s
+	vm.funcTable[ops.I32Load16u] = vm.i32Load16u
+	vm.funcTable[ops.I64Load8s] = vm.i64Load8s
+	vm.funcTable[ops.I64Load8u] = vm.i64Load8u
+	vm.funcTable[ops.I64Load16s] = vm.i64Load16s
+	vm.funcTable[ops.I64Load16u] = vm.i64Load16u
+	vm.funcTable[ops.I64Load32s] = vm.i64Load32s
+	vm.funcTable[ops.I64Load32u] = vm.i64Load32u
+	vm.funcTable[ops.I32Store] = vm.i32Store
+	vm.funcTable[ops.I64Store] = vm.i64Store
+	vm.funcTable[ops.F32Store] = vm.f32Store
+	vm.funcTable[ops.F64Store] = vm.f64Store
+	vm.funcTable[ops.I32Store8] = vm.i32Store8
+	vm.funcTable[ops.I32Store16] = vm.i32Store16
+	vm.funcTable[ops.I64Store8] = vm.i64Store8
+	vm.funcTable[ops.I64Store16] = vm.i64Store16
+	vm.funcTable[ops.I64Store32] = vm.i64Store32
+	vm.funcTable[ops.CurrentMemory] = vm.currentMemory
+	vm.funcTable[ops.GrowMemory] = vm.growMemory
+
+	vm.funcTable[ops.Drop] = vm.drop
+	vm.funcTable[ops.Select] = vm.selectOp
+
+	vm.funcTable[ops.GetLocal] = vm.getLocal
+	vm.funcTable[ops.SetLocal] = vm.setLocal
+	vm.funcTable[ops.TeeLocal] = vm.teeLocal
+	vm.funcTable[ops.GetGlobal] = vm.getGlobal
+	vm.funcTable[ops.SetGlobal] = vm.setGlobal
+
+	vm.funcTable[ops.Unreachable] = vm.unreachable
+	vm.funcTable[ops.Nop] = vm.nop
+
+	vm.funcTable[ops.Call] = vm.call
+	vm.funcTable[ops.CallIndirect] = vm.callIndirect
 }
