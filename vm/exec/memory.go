@@ -151,3 +151,55 @@ func (vm *VM) i32Store8() {
 	vm.memory[vm.fetchBaseAddr()] = v
 }
 
+func (vm *VM) i32Store16() {
+	v := uint16(vm.popUint32())
+	if !vm.inBounds(1) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	endianess.PutUint16(vm.curMem(), v)
+}
+
+func (vm *VM) i64Store() {
+	v := vm.popUint64()
+	if !vm.inBounds(7) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	endianess.PutUint64(vm.curMem(), v)
+}
+
+func (vm *VM) i64Store8() {
+	v := byte(uint8(vm.popUint64()))
+	if !vm.inBounds(0) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	vm.memory[vm.fetchBaseAddr()] = v
+}
+
+func (vm *VM) i64Store16() {
+	v := uint16(vm.popUint64())
+	if !vm.inBounds(1) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	endianess.PutUint16(vm.curMem(), v)
+}
+
+func (vm *VM) i64Store32() {
+	v := uint32(vm.popUint64())
+	if !vm.inBounds(3) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	endianess.PutUint32(vm.curMem(), v)
+}
+
+func (vm *VM) currentMemory() {
+	_ = vm.fetchInt8() 
+	vm.pushInt32(int32(len(vm.memory) / wasmPageSize))
+}
+
+func (vm *VM) growMemory() {
+	_ = vm.fetchInt8() 
+	curLen := len(vm.memory) / wasmPageSize
+	n := vm.popInt32()
+	vm.memory = append(vm.memory, make([]byte, n*wasmPageSize)...)
+	vm.pushInt32(int32(curLen))
+}
