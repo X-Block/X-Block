@@ -77,3 +77,77 @@ func (vm *VM) i64Load8u() {
 	vm.pushUint64(uint64(uint8(vm.memory[vm.fetchBaseAddr()])))
 }
 
+func (vm *VM) i64Load16s() {
+	if !vm.inBounds(1) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	vm.pushInt64(int64(int16(endianess.Uint16(vm.curMem()))))
+}
+
+func (vm *VM) i64Load16u() {
+	if !vm.inBounds(1) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	vm.pushUint64(uint64(endianess.Uint16(vm.curMem())))
+}
+
+func (vm *VM) i64Load32s() {
+	if !vm.inBounds(3) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	vm.pushInt64(int64(int32(endianess.Uint32(vm.curMem()))))
+}
+
+func (vm *VM) i64Load32u() {
+	if !vm.inBounds(3) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	vm.pushUint64(uint64(endianess.Uint32(vm.curMem())))
+}
+
+func (vm *VM) f32Store() {
+	v := math.Float32bits(vm.popFloat32())
+	if !vm.inBounds(3) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	endianess.PutUint32(vm.curMem(), v)
+}
+
+func (vm *VM) f32Load() {
+	if !vm.inBounds(3) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	vm.pushFloat32(math.Float32frombits(endianess.Uint32(vm.curMem())))
+}
+
+func (vm *VM) f64Store() {
+	v := math.Float64bits(vm.popFloat64())
+	if !vm.inBounds(7) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	endianess.PutUint64(vm.curMem(), v)
+}
+
+func (vm *VM) f64Load() {
+	if !vm.inBounds(7) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	vm.pushFloat64(math.Float64frombits(endianess.Uint64(vm.curMem())))
+}
+
+func (vm *VM) i32Store() {
+	v := vm.popUint32()
+	if !vm.inBounds(3) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	endianess.PutUint32(vm.curMem(), v)
+}
+
+func (vm *VM) i32Store8() {
+	v := byte(uint8(vm.popUint32()))
+	if !vm.inBounds(0) {
+		panic(ErrOutOfBoundsMemoryAccess)
+	}
+	vm.memory[vm.fetchBaseAddr()] = v
+}
+
