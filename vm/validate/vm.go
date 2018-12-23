@@ -178,3 +178,23 @@ func (vm *mockVM) adjustStack(op ops.Op) error {
 	return nil
 }
 
+func (vm *mockVM) setPolymorphic() {
+	if len(vm.blocks) == 0 {
+		vm.polymorphic = true
+	} else {
+
+		vm.blocks[len(vm.blocks)-1].polymorphic = true
+	}
+}
+
+func (vm *mockVM) isPolymorphic() bool {
+	if len(vm.blocks) == 0 {
+		return vm.polymorphic
+	}
+
+	return vm.topBlock().polymorphic
+}
+
+func (vm *mockVM) pc() int {
+	return vm.origLength - vm.code.Len()
+}
