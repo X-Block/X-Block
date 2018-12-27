@@ -24,3 +24,57 @@ type dumper struct {
 	n          uint 
 }
 
+func toChar(b byte) byte {
+	if b < 32 || b > 126 {
+		return '.'
+	}
+	return b
+}
+
+func (h *dumper) Write(data []byte) (n int, err error) {
+	for i := range data {
+		if h.used == 0 {
+			h.buf[0] = byte(h.n >> 24)
+			h.buf[1] = byte(h.n >> 16)
+			h.buf[2] = byte(h.n >> 8)
+			h.buf[3] = byte(h.n)
+			hex.Encode(h.buf[4:], h.buf[:4])
+			h.buf[12] = ' '
+			h.buf[13] = ' '
+			_, err = h.w.Write(h.buf[4:])
+			if err != nil {
+				return
+			}
+		}
+		hex.Encode(h.buf[:], data[i:i+1])
+		h.buf[2] = ' '
+		l := 3
+		if h.used == 7 {
+			h.buf[3] = ' '
+			l = 4
+		} else if h.used == 15 {
+			h.buf[3] = ' '
+			h.buf[4] = '|'
+			l = 5
+		}
+		_, err = h.w.Write(h.buf[:l])
+		if err != nil {
+			return
+		}
+		n++
+		h.rightChars[h.used] = toChar(data[i])
+		h.used++
+		h.n++
+		if h.used == 16 {
+			h.rightChars[16] = '|'
+			h.rightChars[17] = '\n'
+			_, err = h.w.Write(h.rightChars[:])
+			if err != nil {
+				return
+			}
+			h.used = 0
+		}
+	}
+	return
+}
+
