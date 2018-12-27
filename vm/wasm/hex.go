@@ -78,3 +78,32 @@ func (h *dumper) Write(data []byte) (n int, err error) {
 	return
 }
 
+func (h *dumper) Close() (err error) {
+
+	if h.used == 0 {
+		return
+	}
+	h.buf[0] = ' '
+	h.buf[1] = ' '
+	h.buf[2] = ' '
+	h.buf[3] = ' '
+	h.buf[4] = '|'
+	nBytes := h.used
+	for h.used < 16 {
+		l := 3
+		if h.used == 7 {
+			l = 4
+		} else if h.used == 15 {
+			l = 5
+		}
+		_, err = h.w.Write(h.buf[:l])
+		if err != nil {
+			return
+		}
+		h.used++
+	}
+	h.rightChars[nBytes] = '|'
+	h.rightChars[nBytes+1] = '\n'
+	_, err = h.w.Write(h.rightChars[:nBytes+2])
+	return
+}
